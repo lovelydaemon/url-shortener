@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"os"
 	"strings"
 )
@@ -13,29 +12,25 @@ import (
 func main() {
 	endpoint := "http://localhost:3000/"
 
-	data := url.Values{}
-
 	fmt.Println("Enter long URL")
 
 	reader := bufio.NewReader(os.Stdin)
 
-	long, err := reader.ReadString('\n')
+	url, err := reader.ReadString('\n')
 	if err != nil {
 		panic(err)
 	}
 
-	long = strings.TrimSuffix(long, "\n")
-
-	data.Set("url", long)
+	url = strings.TrimSuffix(url, "\n")
 
 	client := &http.Client{}
 
-	req, err := http.NewRequest(http.MethodPost, endpoint, strings.NewReader(data.Encode()))
+	req, err := http.NewRequest(http.MethodPost, endpoint, strings.NewReader(url))
 	if err != nil {
 		panic(err)
 	}
 
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Add("Content-Type", "text/plain; charset=utf-8")
 
 	res, err := client.Do(req)
 	if err != nil {
