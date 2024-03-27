@@ -5,7 +5,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/chi/v5"
 	"github.com/lovelydaemon/url-shortener/internal/rnd"
 	"github.com/lovelydaemon/url-shortener/internal/usecase"
 	"github.com/lovelydaemon/url-shortener/internal/validation"
@@ -15,50 +15,54 @@ type shortURLRoutes struct {
 	u usecase.ShortURL
 }
 
-func newShortURLRoutes(handler *gin.Engine, u usecase.ShortURL) {
+func newShortURLRoutes(u usecase.ShortURL) *chi.Mux {
 	r := &shortURLRoutes{u}
+	router := chi.NewRouter()
 
-	handler.GET("/:token", r.getOriginalURL)
-	handler.POST("/", r.createShortURL)
+	router.Get("/{token}", r.getOriginalURL)
+	router.Post("/", r.createShortURL)
+
+	return router
 }
 
-func (r *shortURLRoutes) getOriginalURL(c *gin.Context) {
-	token := c.Param("token")
-	url := fmt.Sprintf("%s/%s", c.Request.Host, token)
+func (r *shortURLRoutes) getOriginalURL(w http.ResponseWriter, req *http.Request) {
+	token := chi.URLParam(req, "token")
+	url := fmt.Sprintf("%s/%s", req.Host, token)
 
-	u, ok := r.u.Get(url)
-	if !ok {
-		c.String(http.StatusBadRequest, "not found")
+	if u, ok := r.u.Get(url); ok {
+		w.Header().Set("Location", u)
+		w.WriteHeader(http.StatusTemporaryRedirect)
+		return
+	}
+	http.Error(w, "not found", http.StatusNotFound)
+}
+
+func (r *shortURLRoutes) createShortURL(w http.ResponseWriter, req *http.Request) {
+	contentType := req.Header.Get("Content-Type")
+
+	if contentType != "text/plain; charset=utf-8" {
+		http.Error(w, "bad content type", http.StatusBadRequest)
 		return
 	}
 
-	c.Redirect(http.StatusTemporaryRedirect, u)
-}
-
-func (r *shortURLRoutes) createShortURL(c *gin.Context) {
-	if c.ContentType() != "text/plain" {
-		c.String(http.StatusBadRequest, "bad content type")
-		return
-	}
-
-	body, err := io.ReadAll(c.Request.Body)
+	body, err := io.ReadAll(req.Body)
 	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	if validation.IsValidUrl(string(body)) != nil {
-		c.String(http.StatusBadRequest, "bad url link")
+		http.Error(w, "bad body data", http.StatusBadRequest)
 		return
 	}
 
-	shortURL, ok := r.u.Get(string(body))
-	if ok {
-		c.String(http.StatusOK, shortURL)
+	if shortURL, ok := r.u.Get(string(body)); ok {
+		w.Write([]byte(shortURL))
 		return
 	}
 
-	shortURL = fmt.Sprintf("%s/%s", c.Request.Host, rnd.NewRandomString(9))
+	shortURL := fmt.Sprintf("%s/%s", req.Host, rnd.NewRandomString(9))
 	r.u.Create(string(body), shortURL)
-	c.String(http.StatusCreated, shortURL)
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte(shortURL))
 }

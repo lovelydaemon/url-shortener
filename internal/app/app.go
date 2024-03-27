@@ -2,7 +2,6 @@
 package app
 
 import (
-	"github.com/gin-gonic/gin"
 	v1 "github.com/lovelydaemon/url-shortener/internal/controller/http/v1"
 	"github.com/lovelydaemon/url-shortener/internal/httpserver"
 	"github.com/lovelydaemon/url-shortener/internal/usecase"
@@ -18,8 +17,7 @@ func Run() error {
 	)
 
 	// HTTP Server
-	handler := gin.Default()
-	v1.NewRouter(handler, shortURLUseCase)
-	httpserver := httpserver.New(handler)
+	r := v1.NewRouter(shortURLUseCase)
+	httpserver := httpserver.New(r)
 	return httpserver.ListenAndServe()
 }
