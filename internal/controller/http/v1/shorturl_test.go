@@ -13,7 +13,7 @@ import (
 )
 
 func Test_shortURLRoutes_createShortURL(t *testing.T) {
-  gin.SetMode("test")
+	gin.SetMode("test")
 	r := gin.Default()
 	newShortURLRoutes(r, usecase.New(repo.New()))
 
