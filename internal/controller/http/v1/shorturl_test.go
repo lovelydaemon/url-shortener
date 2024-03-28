@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 
@@ -32,11 +33,14 @@ func Test_shortURLRoutes_getOriginalURL(t *testing.T) {
 
 	bodyData, err := io.ReadAll(res.Body)
 	require.NoError(t, err)
+  
+  url, err := url.ParseRequestURI(string(bodyData))
+  require.NoError(t, err)
 
-	token := strings.Split(string(bodyData), "/")
-
+	token := strings.TrimLeft(url.Path, "/")
+  
 	t.Run("valid redirect", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodGet, "/"+token[1], nil)
+		req := httptest.NewRequest(http.MethodGet, "/"+token, nil)
 
 		res := executeRequest(req, r)
 		assert.Equal(t, http.StatusTemporaryRedirect, res.Code)
