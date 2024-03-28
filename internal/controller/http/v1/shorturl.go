@@ -28,9 +28,8 @@ func NewShortURLRoutes(u usecase.ShortURL, shortAddr string) *chi.Mux {
 
 func (r *shortURLRoutes) getOriginalURL(w http.ResponseWriter, req *http.Request) {
 	token := chi.URLParam(req, "token")
-	url := fmt.Sprintf("http://%s/%s", req.Host, token)
 
-	if u, ok := r.u.Get(url); ok {
+	if u, ok := r.u.Get(token); ok {
 		w.Header().Set("Location", u)
 		w.WriteHeader(http.StatusTemporaryRedirect)
 		return
@@ -57,13 +56,17 @@ func (r *shortURLRoutes) createShortURL(w http.ResponseWriter, req *http.Request
 		return
 	}
 
-	if shortURL, ok := r.u.Get(string(body)); ok {
+	if token, ok := r.u.Get(string(body)); ok {
+    shortURL := fmt.Sprintf("http://%s/%s",r.shortAddr , token)
 		w.Write([]byte(shortURL))
 		return
 	}
+  
+	token := rnd.NewRandomString(9)
+	r.u.Create(string(body), token)
+  
+  shortURL := fmt.Sprintf("http://%s/%s",r.shortAddr , token)
 
-	shortURL := fmt.Sprintf("http://%s/%s", r.shortAddr, rnd.NewRandomString(9))
-	r.u.Create(string(body), shortURL)
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(shortURL))
 }
