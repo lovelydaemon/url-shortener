@@ -3,11 +3,12 @@ package main
 import (
 	"log"
 
+	"github.com/lovelydaemon/url-shortener/config"
 	"github.com/lovelydaemon/url-shortener/internal/app"
 )
 
 func main() {
-	if err := app.Run(); err != nil {
-		log.Fatal(err)
-	}
+	cfg := config.NewConfig()
+
+	log.Fatal(app.Run(cfg))
 }
