@@ -1,6 +1,9 @@
 package config
 
-import "flag"
+import (
+	"flag"
+	"fmt"
+)
 
 type (
 	Config struct {
@@ -12,6 +15,8 @@ type (
 func NewConfig() *Config {
 	cfg := &Config{}
 	parseFlags(cfg)
+
+  fmt.Println("CONFIG -------------- ASDFBCSF ", cfg)
 
 	return cfg
 }
