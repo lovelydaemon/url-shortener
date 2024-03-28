@@ -28,7 +28,7 @@ jobs:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: praktikum
         options: >-
-          --health-cmd pg-isready
+          --health-cmd pg_isready
           --health-interval 5s
           --health-timeout 5s
           --health-retries 5
