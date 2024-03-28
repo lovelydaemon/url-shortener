@@ -12,11 +12,12 @@ import (
 )
 
 type shortURLRoutes struct {
-	u usecase.ShortURL
+	u         usecase.ShortURL
+	shortAddr string
 }
 
-func newShortURLRoutes(u usecase.ShortURL) *chi.Mux {
-	r := &shortURLRoutes{u}
+func NewShortURLRoutes(u usecase.ShortURL, shortAddr string) *chi.Mux {
+	r := &shortURLRoutes{u, shortAddr}
 	router := chi.NewRouter()
 
 	router.Get("/{token}", r.getOriginalURL)
@@ -27,7 +28,7 @@ func newShortURLRoutes(u usecase.ShortURL) *chi.Mux {
 
 func (r *shortURLRoutes) getOriginalURL(w http.ResponseWriter, req *http.Request) {
 	token := chi.URLParam(req, "token")
-  url := fmt.Sprintf("http://%s/%s", req.Host, token)
+	url := fmt.Sprintf("http://%s/%s", req.Host, token)
 
 	if u, ok := r.u.Get(url); ok {
 		w.Header().Set("Location", u)
@@ -61,7 +62,7 @@ func (r *shortURLRoutes) createShortURL(w http.ResponseWriter, req *http.Request
 		return
 	}
 
-  shortURL := fmt.Sprintf("http://%s/%s", req.Host, rnd.NewRandomString(9))
+	shortURL := fmt.Sprintf("http://%s/%s", r.shortAddr, rnd.NewRandomString(9))
 	r.u.Create(string(body), shortURL)
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(shortURL))

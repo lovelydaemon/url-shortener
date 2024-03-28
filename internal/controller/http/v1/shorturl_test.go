@@ -25,7 +25,7 @@ func executeRequest(req *http.Request, r *chi.Mux) *httptest.ResponseRecorder {
 func Test_shortURLRoutes_getOriginalURL(t *testing.T) {
 	usecase := usecase.New(repo.New())
 	r := chi.NewRouter()
-	r.Mount("/", newShortURLRoutes(usecase))
+	r.Mount("/", NewShortURLRoutes(usecase, "example.com:8080"))
 
 	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader("https://google.com"))
 	req.Header.Set("Content-Type", "text/plain; charset=utf-8")
@@ -33,15 +33,14 @@ func Test_shortURLRoutes_getOriginalURL(t *testing.T) {
 
 	bodyData, err := io.ReadAll(res.Body)
 	require.NoError(t, err)
-  
-  url, err := url.ParseRequestURI(string(bodyData))
-  require.NoError(t, err)
+
+	url, err := url.ParseRequestURI(string(bodyData))
+	require.NoError(t, err)
 
 	token := strings.TrimLeft(url.Path, "/")
-  
-	t.Run("valid redirect", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodGet, "/"+token, nil)
 
+	t.Run("valid redirect", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "http://example.com:8080/"+token, nil)
 		res := executeRequest(req, r)
 		assert.Equal(t, http.StatusTemporaryRedirect, res.Code)
 	})
@@ -56,7 +55,7 @@ func Test_shortURLRoutes_getOriginalURL(t *testing.T) {
 func Test_shortURLRoutes_createShortURL(t *testing.T) {
 	usecase := usecase.New(repo.New())
 	r := chi.NewRouter()
-	r.Mount("/", newShortURLRoutes(usecase))
+	r.Mount("/", NewShortURLRoutes(usecase, "localhost:8080"))
 
 	cases := []struct {
 		name         string

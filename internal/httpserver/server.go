@@ -12,11 +12,17 @@ const (
 )
 
 // New creates default http server
-func New(handler http.Handler) *http.Server {
-	return &http.Server{
+func New(handler http.Handler, opts ...Option) *http.Server {
+	s := &http.Server{
 		Addr:         _defaultAddr,
 		Handler:      handler,
 		ReadTimeout:  _defaultReadTimeout,
 		WriteTimeout: _defaultWriteTimeout,
 	}
+
+	for _, opt := range opts {
+		opt(s)
+	}
+
+	return s
 }
