@@ -1,12 +1,12 @@
 package v1
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/lovelydaemon/url-shortener/internal/rnd"
+	"github.com/lovelydaemon/url-shortener/internal/url"
 	"github.com/lovelydaemon/url-shortener/internal/usecase"
 	"github.com/lovelydaemon/url-shortener/internal/validation"
 )
@@ -57,7 +57,7 @@ func (r *shortURLRoutes) createShortURL(w http.ResponseWriter, req *http.Request
 	}
 
 	if token, ok := r.u.Get(string(body)); ok {
-    shortURL := fmt.Sprintf("http://%s/%s",r.shortAddr , token)
+    shortURL := url.CreateValidURL(r.shortAddr, token)
 		w.Write([]byte(shortURL))
 		return
 	}
@@ -65,7 +65,7 @@ func (r *shortURLRoutes) createShortURL(w http.ResponseWriter, req *http.Request
 	token := rnd.NewRandomString(9)
 	r.u.Create(string(body), token)
   
-  shortURL := fmt.Sprintf("http://%s/%s",r.shortAddr , token)
+  shortURL := url.CreateValidURL(r.shortAddr, token)
 
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(shortURL))

@@ -2,7 +2,6 @@ package config
 
 import (
 	"flag"
-	"fmt"
 )
 
 type (
@@ -15,8 +14,6 @@ type (
 func NewConfig() *Config {
 	cfg := &Config{}
 	parseFlags(cfg)
-
-  fmt.Println("CONFIG -------------- ASDFBCSF ", cfg)
 
 	return cfg
 }
