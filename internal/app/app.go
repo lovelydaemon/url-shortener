@@ -2,17 +2,17 @@
 package app
 
 import (
-	"fmt"
-
 	"github.com/lovelydaemon/url-shortener/config"
 	v1 "github.com/lovelydaemon/url-shortener/internal/controller/http/v1"
 	"github.com/lovelydaemon/url-shortener/internal/httpserver"
+	"github.com/lovelydaemon/url-shortener/internal/logger"
 	"github.com/lovelydaemon/url-shortener/internal/usecase"
 	"github.com/lovelydaemon/url-shortener/internal/usecase/repo"
 )
 
 // Run creates objects via constructors
 func Run(cfg *config.Config) error {
+  l := logger.New(cfg.Log.Level)
 
 	// Use case
 	shortURLUseCase := usecase.New(
@@ -21,9 +21,9 @@ func Run(cfg *config.Config) error {
 
 	// HTTP Server
 	r := v1.NewRouter()
-	r.Mount("/", v1.NewShortURLRoutes(shortURLUseCase, cfg.BaseURL))
+	r.Mount("/", v1.NewShortURLRoutes(shortURLUseCase, cfg.BaseURL, l))
 
-	httpserver := httpserver.New(r, httpserver.Addr(cfg.Addr))
-	fmt.Printf("Server running on %s\n", httpserver.Addr)
-	return httpserver.ListenAndServe()
+	httpServer := httpserver.New(r, httpserver.Addr(cfg.HTTP.Addr))
+  l.Info("Server running on " + httpServer.Addr)
+	return httpServer.ListenAndServe()
 }

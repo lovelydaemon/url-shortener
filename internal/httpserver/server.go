@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	_defaultAddr         = ":8080"
+	_defaultAddr         = "localhost:8080"
 	_defaultReadTimeout  = 10 * time.Second
 	_defaultWriteTimeout = 10 * time.Second
 )
