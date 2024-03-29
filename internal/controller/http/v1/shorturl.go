@@ -57,15 +57,15 @@ func (r *shortURLRoutes) createShortURL(w http.ResponseWriter, req *http.Request
 	}
 
 	if token, ok := r.u.Get(string(body)); ok {
-    shortURL := url.CreateValidURL(r.shortAddr, token)
+		shortURL := url.CreateValidURL(r.shortAddr, token)
 		w.Write([]byte(shortURL))
 		return
 	}
-  
+
 	token := rnd.NewRandomString(9)
 	r.u.Create(string(body), token)
-  
-  shortURL := url.CreateValidURL(r.shortAddr, token)
+
+	shortURL := url.CreateValidURL(r.shortAddr, token)
 
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(shortURL))
