@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/lovelydaemon/url-shortener/internal/logger"
 	"github.com/lovelydaemon/url-shortener/internal/usecase"
 	"github.com/lovelydaemon/url-shortener/internal/usecase/repo"
 
@@ -25,7 +26,7 @@ func executeRequest(req *http.Request, r *chi.Mux) *httptest.ResponseRecorder {
 func Test_shortURLRoutes_getOriginalURL(t *testing.T) {
 	usecase := usecase.New(repo.New())
 	r := chi.NewRouter()
-	r.Mount("/", NewShortURLRoutes(usecase, "example.com:8080"))
+	r.Mount("/", NewShortURLRoutes(usecase, "example.com:8080", logger.New("error")))
 
 	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader("https://google.com"))
 	req.Header.Set("Content-Type", "text/plain; charset=utf-8")
@@ -55,7 +56,7 @@ func Test_shortURLRoutes_getOriginalURL(t *testing.T) {
 func Test_shortURLRoutes_createShortURL(t *testing.T) {
 	usecase := usecase.New(repo.New())
 	r := chi.NewRouter()
-	r.Mount("/", NewShortURLRoutes(usecase, "localhost:8080"))
+	r.Mount("/", NewShortURLRoutes(usecase, "localhost:8080", logger.New("error")))
 
 	cases := []struct {
 		name         string
