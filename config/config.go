@@ -15,7 +15,7 @@ type (
 	}
 
   HTTP struct {
-    Port string `env-required:"true" yaml:"port" env:"HTTP_PORT"`
+    Addr string `yaml:"port" env:"SERVER_ADDRESS"`
   }
 
   Log struct {
@@ -28,10 +28,6 @@ func NewConfig() (*Config, error) {
 	cfg := &Config{}
 	parseFlags(cfg)
 
- // if err := cleanenv.ReadConfig("./config/config.yml", cfg); err != nil {
- //   return nil, fmt.Errorf("config error: %w", err)
- // }
-  
   if err := cleanenv.ReadEnv(cfg); err != nil {
     return nil, err
   }
@@ -40,7 +36,7 @@ func NewConfig() (*Config, error) {
 }
 
 func parseFlags(cfg *Config) {
-	flag.StringVar(&cfg.HTTP.Port, "a", "8080", "port to run server")
+	flag.StringVar(&cfg.HTTP.Addr, "a", "8080", "port to run server")
 	flag.StringVar(&cfg.BaseURL, "b", "localhost:8080", "address and port for short url")
 	flag.Parse()
 
