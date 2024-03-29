@@ -16,27 +16,27 @@ func TestCreateValidURL(t *testing.T) {
 		args args
 		want string
 	}{
-    {
-      name: "baseURL with http:// protocol",
-    	args: args{
-        baseURL: "http://example.com",
-        path: "token",
-      },
-      want: "http://example.com/token",
-    },
-    {
-      name: "baseURL w/o http:// protocol",
-    	args: args{
-        baseURL: "example.com",
-        path: "token",
-      },
-      want: "http://example.com/token",
-    },
+		{
+			name: "baseURL with http:// protocol",
+			args: args{
+				baseURL: "http://example.com",
+				path:    "token",
+			},
+			want: "http://example.com/token",
+		},
+		{
+			name: "baseURL w/o http:// protocol",
+			args: args{
+				baseURL: "example.com",
+				path:    "token",
+			},
+			want: "http://example.com/token",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-      url := CreateValidURL(tt.args.baseURL, tt.args.path)
-      assert.Equal(t, tt.want, url)
+			url := CreateValidURL(tt.args.baseURL, tt.args.path)
+			assert.Equal(t, tt.want, url)
 		})
 	}
 }

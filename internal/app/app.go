@@ -21,7 +21,7 @@ func Run(cfg *config.Config) error {
 
 	// HTTP Server
 	r := v1.NewRouter()
-	r.Mount("/", v1.NewShortURLRoutes(shortURLUseCase, cfg.ShortAddr))
+	r.Mount("/", v1.NewShortURLRoutes(shortURLUseCase, cfg.BaseURL))
 
 	httpserver := httpserver.New(r, httpserver.Addr(cfg.Addr))
 	fmt.Printf("Server running on %s\n", httpserver.Addr)
