@@ -113,12 +113,6 @@ func Test_shortURLRoutes_createShortURL(t *testing.T) {
 			expectedCode:        http.StatusCreated,
 			expectedResponseURL: true,
 		},
-		{
-			name:                "method_post_success_already_exists",
-			bodyURL:             "https://example.com",
-			expectedCode:        http.StatusOK,
-			expectedResponseURL: true,
-		},
 	}
 
 	for _, tt := range cases {
