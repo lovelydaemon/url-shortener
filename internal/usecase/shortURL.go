@@ -15,6 +15,6 @@ func (uc *ShortURLUseCase) Get(url string) (string, bool) {
 	return u, ok
 }
 
-func (uc *ShortURLUseCase) Create(originalURL, shortURL string) {
-	uc.repo.Create(originalURL, shortURL)
+func (uc *ShortURLUseCase) Create(originalURL, token string) {
+	uc.repo.Create(originalURL, token)
 }

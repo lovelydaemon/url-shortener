@@ -15,7 +15,6 @@ func (r *ShortURLRepo) Get(url string) (string, bool) {
 	return u, ok
 }
 
-func (r *ShortURLRepo) Create(originalURL, shortURL string) {
-	r.store[originalURL] = shortURL
-	r.store[shortURL] = originalURL
+func (r *ShortURLRepo) Create(originalURL, token string) {
+	r.store[token] = originalURL
 }

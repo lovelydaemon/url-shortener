@@ -66,13 +66,6 @@ func (r *shortURLRoutes) createShortURL(w http.ResponseWriter, req *http.Request
 
 	}
 
-	if token, ok := r.u.Get(bodyURL); ok {
-		shortURL := urlc.CreateValidURL(r.shortAddr, token)
-		r.l.Info("Url already exists, return 200")
-		w.Write([]byte(shortURL))
-		return
-	}
-
 	token := rnd.NewRandomString(9)
 	r.u.Create(bodyURL, token)
 
