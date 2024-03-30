@@ -38,6 +38,6 @@ func NewConfig() (*Config, error) {
 
 func parseFlags(cfg *Config) {
   flag.StringVar(&cfg.HTTP.Addr, "a", "localhost:8080", "port on which the server will run")
-	flag.StringVar(&cfg.BaseURL, "b", "localhost:8080", "base url for short url output")
+	flag.StringVar(&cfg.BaseURL, "b", "", "base url for short url output")
 	flag.Parse()
 }
