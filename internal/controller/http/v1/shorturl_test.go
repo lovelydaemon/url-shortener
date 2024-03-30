@@ -23,7 +23,7 @@ func executeRequest(req *http.Request, r *chi.Mux) *httptest.ResponseRecorder {
 	return w
 }
 
-func Test_shortURLRoutes_getOriginalURL(t *testing.T) {
+func Test_ShortURLRoutes_getOriginalURL(t *testing.T) {
 	usecase := usecase.New(repo.New())
 	r := chi.NewRouter()
 	r.Mount("/", NewShortURLRoutes(usecase, "example.com:8080", logger.New("error")))
@@ -40,12 +40,12 @@ func Test_shortURLRoutes_getOriginalURL(t *testing.T) {
 
 	token := strings.TrimLeft(url.Path, "/")
 
-	t.Run("valid redirect", func(t *testing.T) {
+	t.Run("method_get_success_redirect", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "http://example.com:8080/"+token, nil)
 		res := executeRequest(req, r)
 		assert.Equal(t, http.StatusTemporaryRedirect, res.Code)
 	})
-	t.Run("invalid not found", func(t *testing.T) {
+	t.Run("method_get_not_found", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/example", nil)
 
 		res := executeRequest(req, r)
@@ -67,7 +67,7 @@ func Test_shortURLRoutes_createShortURL(t *testing.T) {
 		expectedCode int
 	}{
 		{
-			name:         "invalid bad content type",
+			name:         "method_post_bad_content_type",
 			method:       http.MethodPost,
 			url:          "http://example.com",
 			endpoint:     "/",
@@ -75,7 +75,7 @@ func Test_shortURLRoutes_createShortURL(t *testing.T) {
 			expectedCode: http.StatusBadRequest,
 		},
 		{
-			name:         "invalid bad body data",
+			name:         "method_post_bad_body_data",
 			method:       http.MethodPost,
 			url:          "example.com",
 			endpoint:     "/",
@@ -83,7 +83,7 @@ func Test_shortURLRoutes_createShortURL(t *testing.T) {
 			expectedCode: http.StatusBadRequest,
 		},
 		{
-			name:         "valid first time created",
+			name:         "method_post_success",
 			method:       http.MethodPost,
 			url:          "https://example.com",
 			endpoint:     "/",
@@ -91,7 +91,7 @@ func Test_shortURLRoutes_createShortURL(t *testing.T) {
 			expectedCode: http.StatusCreated,
 		},
 		{
-			name:         "valid url already exists",
+			name:         "method_post_success_already_exists",
 			method:       http.MethodPost,
 			url:          "https://example.com",
 			endpoint:     "/",

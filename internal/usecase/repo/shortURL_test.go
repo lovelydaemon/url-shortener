@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestShortURLRepo_Get(t *testing.T) {
+func Test_ShortURLRepo_Get(t *testing.T) {
 	repo := New()
 
 	repo.store["originalURL"] = "shortURL"
@@ -24,7 +24,7 @@ func TestShortURLRepo_Get(t *testing.T) {
 		want want
 	}{
 		{
-			name: "short url found",
+			name: "short_url_found",
 			url:  "originalURL",
 			want: want{
 				url: "shortURL",
@@ -32,7 +32,7 @@ func TestShortURLRepo_Get(t *testing.T) {
 			},
 		},
 		{
-			name: "short url not found",
+			name: "short_url_not_found",
 			url:  "exampleURL",
 			want: want{
 				url: "",
@@ -40,7 +40,7 @@ func TestShortURLRepo_Get(t *testing.T) {
 			},
 		},
 		{
-			name: "original url found",
+			name: "original_url_found",
 			url:  "shortURL",
 			want: want{
 				url: "originalURL",
@@ -48,7 +48,7 @@ func TestShortURLRepo_Get(t *testing.T) {
 			},
 		},
 		{
-			name: "original url not found",
+			name: "original_url_not_found",
 			url:  "shortexampleURL",
 			want: want{
 				url: "",
@@ -66,7 +66,7 @@ func TestShortURLRepo_Get(t *testing.T) {
 	}
 }
 
-func TestShortURLRepo_Create(t *testing.T) {
+func Test_ShortURLRepo_Create(t *testing.T) {
 	repo := New()
 
 	type want struct {
@@ -80,7 +80,7 @@ func TestShortURLRepo_Create(t *testing.T) {
 		want        want
 	}{
 		{
-			name:        "url added to store",
+			name:        "url_added_to_store",
 			originalURL: "originalURL",
 			shortURL:    "shortURL",
 			want: want{

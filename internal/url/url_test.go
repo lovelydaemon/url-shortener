@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCreateValidURL(t *testing.T) {
+func Test_CreateValidURL(t *testing.T) {
 	type args struct {
 		baseURL string
 		path    string
@@ -17,7 +17,7 @@ func TestCreateValidURL(t *testing.T) {
 		want string
 	}{
 		{
-			name: "baseURL with http:// protocol",
+			name: "baseURL_with_scheme_protocol",
 			args: args{
 				baseURL: "http://example.com",
 				path:    "token",
@@ -25,7 +25,7 @@ func TestCreateValidURL(t *testing.T) {
 			want: "http://example.com/token",
 		},
 		{
-			name: "baseURL w/o http:// protocol",
+			name: "baseURL_without_scheme_protocol",
 			args: args{
 				baseURL: "example.com",
 				path:    "token",

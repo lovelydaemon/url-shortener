@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestShortURLUseCase_Get(t *testing.T) {
+func Test_ShortURLUseCase_Get(t *testing.T) {
 	usecase := New(repo.New())
 
 	usecase.Create("originalURL", "shortURL")
@@ -23,7 +23,7 @@ func TestShortURLUseCase_Get(t *testing.T) {
 		want want
 	}{
 		{
-			name: "original url found",
+			name: "original_url_found",
 			url:  "shortURL",
 			want: want{
 				url: "originalURL",
@@ -31,7 +31,7 @@ func TestShortURLUseCase_Get(t *testing.T) {
 			},
 		},
 		{
-			name: "short url found",
+			name: "short_url_found",
 			url:  "originalURL",
 			want: want{
 				url: "shortURL",
