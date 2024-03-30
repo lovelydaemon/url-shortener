@@ -2,24 +2,24 @@ package config
 
 import (
 	"flag"
-	"os"
+	"log"
 
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
 type (
 	Config struct {
-    HTTP `yaml:"http"`
-    Log `yaml:"logger"`
-    BaseURL string
+    HTTP
+    Log
+    BaseURL string `env:"BASE_URL"`
 	}
 
   HTTP struct {
-    Addr string `yaml:"port" env:"SERVER_ADDRESS"`
+    Addr string `env:"SERVER_ADDRESS"`
   }
 
   Log struct {
-    Level string `yaml:"log_level" env:"LOG_LEVEL"`
+    Level string `env:"LOG_LEVEL"`
   }
 )
 
@@ -31,16 +31,13 @@ func NewConfig() (*Config, error) {
   if err := cleanenv.ReadEnv(cfg); err != nil {
     return nil, err
   }
+  log.Println("Base url", cfg.BaseURL)
 
 	return cfg, nil
 }
 
 func parseFlags(cfg *Config) {
-  flag.StringVar(&cfg.HTTP.Addr, "a", "localhost:8080", "port to run server")
-	flag.StringVar(&cfg.BaseURL, "b", "localhost:8080", "address and port for short url")
+  flag.StringVar(&cfg.HTTP.Addr, "a", "localhost:8080", "port on which the server will run")
+	flag.StringVar(&cfg.BaseURL, "b", "localhost:8080", "base url for short url output")
 	flag.Parse()
-
-	if baseURL := os.Getenv("BASE_URL"); baseURL != "" {
-		cfg.BaseURL = baseURL
-	}
 }
