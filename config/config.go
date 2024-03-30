@@ -8,18 +8,18 @@ import (
 
 type (
 	Config struct {
-    HTTP
-    Log
-    BaseURL string `env:"BASE_URL"`
+		HTTP
+		Log
+		BaseURL string `env:"BASE_URL"`
 	}
 
-  HTTP struct {
-    Addr string `env:"SERVER_ADDRESS"`
-  }
+	HTTP struct {
+		Addr string `env:"SERVER_ADDRESS"`
+	}
 
-  Log struct {
-    Level string `env:"LOG_LEVEL"`
-  }
+	Log struct {
+		Level string `env:"LOG_LEVEL"`
+	}
 )
 
 // NewConfig returns app config
@@ -35,7 +35,7 @@ func NewConfig() (*Config, error) {
 }
 
 func parseFlags(cfg *Config) {
-  flag.StringVar(&cfg.HTTP.Addr, "a", "localhost:8080", "port on which the server will run")
-	flag.StringVar(&cfg.BaseURL, "b", "localhost:8080", "base url for short url output")
+	flag.StringVar(&cfg.HTTP.Addr, "a", "localhost:8080", "port on which the server will run")
+	flag.StringVar(&cfg.BaseURL, "b", "", "base url for short url output")
 	flag.Parse()
 }

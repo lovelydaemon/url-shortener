@@ -12,7 +12,7 @@ import (
 
 // Run creates objects via constructors
 func Run(cfg *config.Config) error {
-  l := logger.New(cfg.Log.Level)
+	l := logger.New(cfg.Log.Level)
 
 	// Use case
 	shortURLUseCase := usecase.New(
@@ -24,6 +24,6 @@ func Run(cfg *config.Config) error {
 	r.Mount("/", v1.NewShortURLRoutes(shortURLUseCase, cfg.BaseURL, l))
 
 	httpServer := httpserver.New(r, httpserver.Addr(cfg.HTTP.Addr))
-  l.Info("Server running on " + httpServer.Addr)
+	l.Info("Server running on " + httpServer.Addr)
 	return httpServer.ListenAndServe()
 }
