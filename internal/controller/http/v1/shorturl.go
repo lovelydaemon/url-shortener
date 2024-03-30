@@ -3,13 +3,13 @@ package v1
 import (
 	"io"
 	"net/http"
+	"net/url"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/lovelydaemon/url-shortener/internal/logger"
 	"github.com/lovelydaemon/url-shortener/internal/rnd"
-	"github.com/lovelydaemon/url-shortener/internal/url"
+	urlc "github.com/lovelydaemon/url-shortener/internal/url"
 	"github.com/lovelydaemon/url-shortener/internal/usecase"
-	"github.com/lovelydaemon/url-shortener/internal/validation"
 )
 
 type shortURLRoutes struct {
@@ -57,23 +57,26 @@ func (r *shortURLRoutes) createShortURL(w http.ResponseWriter, req *http.Request
 		return
 	}
 
-	if validation.IsValidUrl(string(body)) != nil {
-    r.l.Info("Incorrect body url", string(body))
+  bodyURL := string(body)
+  
+  if _, err := url.ParseRequestURI(bodyURL); err != nil {
+    r.l.Info("Incorrect body url", bodyURL)
 		http.Error(w, "bad body data", http.StatusBadRequest)
 		return
-	}
 
-	if token, ok := r.u.Get(string(body)); ok {
-		shortURL := url.CreateValidURL(r.shortAddr, token)
+  }
+
+	if token, ok := r.u.Get(bodyURL); ok {
+		shortURL := urlc.CreateValidURL(r.shortAddr, token)
     r.l.Info("Url already exists, return 200")
 		w.Write([]byte(shortURL))
 		return
 	}
 
 	token := rnd.NewRandomString(9)
-	r.u.Create(string(body), token)
+	r.u.Create(bodyURL, token)
 
-	shortURL := url.CreateValidURL(r.shortAddr, token)
+	shortURL := urlc.CreateValidURL(r.shortAddr, token)
 
   r.l.Info("Short url created, 201")
 	w.WriteHeader(http.StatusCreated)
