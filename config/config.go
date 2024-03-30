@@ -2,7 +2,6 @@ package config
 
 import (
 	"flag"
-	"log"
 
 	"github.com/ilyakaznacheev/cleanenv"
 )
@@ -31,7 +30,6 @@ func NewConfig() (*Config, error) {
   if err := cleanenv.ReadEnv(cfg); err != nil {
     return nil, err
   }
-  log.Println("Base url", cfg.BaseURL)
 
 	return cfg, nil
 }
