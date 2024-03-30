@@ -7,9 +7,12 @@ require (
 	github.com/stretchr/testify v1.9.0
 )
 
+require golang.org/x/net v0.22.0 // indirect
+
 require (
 	github.com/BurntSushi/toml v1.3.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/go-resty/resty/v2 v2.12.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
