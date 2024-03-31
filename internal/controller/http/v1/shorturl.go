@@ -39,7 +39,7 @@ func (r *shortURLRoutes) getOriginalURL(w http.ResponseWriter, req *http.Request
 	}
 
 	r.l.Info("Original url not found")
-	http.Error(w, "not found", http.StatusNotFound)
+	w.WriteHeader(http.StatusNotFound)
 }
 
 func (r *shortURLRoutes) createShortURL(w http.ResponseWriter, req *http.Request) {
@@ -47,21 +47,22 @@ func (r *shortURLRoutes) createShortURL(w http.ResponseWriter, req *http.Request
 
 	if contentType != "text/plain; charset=utf-8" {
 		r.l.Info("Bad content type", contentType)
-		http.Error(w, "bad content type", http.StatusUnsupportedMediaType)
+		w.WriteHeader(http.StatusUnsupportedMediaType)
 		return
 	}
 
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		r.l.Info("Error reading body", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	bodyURL := string(body)
 
 	if _, err := url.ParseRequestURI(bodyURL); err != nil {
-		r.l.Info("Incorrect body url", bodyURL)
-		http.Error(w, "bad body data", http.StatusBadRequest)
+		r.l.Info("Invalid request body", bodyURL)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 
 	}
