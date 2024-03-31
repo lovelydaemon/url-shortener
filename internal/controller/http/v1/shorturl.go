@@ -47,7 +47,7 @@ func (r *shortURLRoutes) createShortURL(w http.ResponseWriter, req *http.Request
 
 	if contentType != "text/plain; charset=utf-8" {
 		r.l.Info("Bad content type", contentType)
-		http.Error(w, "bad content type", http.StatusBadRequest)
+		http.Error(w, "bad content type", http.StatusUnsupportedMediaType)
 		return
 	}
 

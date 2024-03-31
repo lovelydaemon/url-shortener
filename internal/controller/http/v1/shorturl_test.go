@@ -95,7 +95,7 @@ func Test_shortURLRoutes_createShortURL(t *testing.T) {
 			name:         "method_post_bad_content_type",
 			bodyURL:      "http://example.com",
 			contentType:  "application/json",
-			expectedCode: http.StatusBadRequest,
+			expectedCode: http.StatusUnsupportedMediaType,
 		},
 		{
 			name:         "method_post_empty_body",
