@@ -1,14 +1,14 @@
 package v1
 
 import (
-	"io"
+	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"strings"
 	"testing"
 
-	"github.com/go-chi/chi/v5"
+	"github.com/go-resty/resty/v2"
 	"github.com/lovelydaemon/url-shortener/internal/logger"
 	"github.com/lovelydaemon/url-shortener/internal/usecase"
 	"github.com/lovelydaemon/url-shortener/internal/usecase/repo"
@@ -17,96 +17,126 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func executeRequest(req *http.Request, r *chi.Mux) *httptest.ResponseRecorder {
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, req)
-	return w
-}
-
-func Test_shortURLRoutes_getOriginalURL(t *testing.T) {
+func Test_ShortURLRoutes_getOriginalURL(t *testing.T) {
 	usecase := usecase.New(repo.New())
-	r := chi.NewRouter()
-	r.Mount("/", NewShortURLRoutes(usecase, "example.com:8080", logger.New("error")))
 
-	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader("https://google.com"))
-	req.Header.Set("Content-Type", "text/plain; charset=utf-8")
-	res := executeRequest(req, r)
+	srv := httptest.NewServer(NewShortURLRoutes(usecase, "", logger.New("error")))
+	defer srv.Close()
 
-	bodyData, err := io.ReadAll(res.Body)
-	require.NoError(t, err)
+	originalURL := "http://example.com"
+	client := resty.New().R()
+	client.Method = http.MethodPost
+	client.URL = srv.URL
+	client.SetHeader("Content-type", "text/plain; charset=utf-8")
+	client.SetBody(originalURL)
+	resp, err := client.Send()
+	require.NoError(t, err, "error making HTTP request")
 
-	url, err := url.ParseRequestURI(string(bodyData))
-	require.NoError(t, err)
+	respURL := string(resp.Body())
 
-	token := strings.TrimLeft(url.Path, "/")
+	cases := []struct {
+		name         string
+		url          string
+		expectedCode int
+	}{
+		{
+			name:         "method_get_success_redirect",
+			url:          respURL,
+			expectedCode: http.StatusTemporaryRedirect,
+		},
+		{
+			name:         "method_get_not_found",
+			url:          fmt.Sprintf("%s/asdf", srv.URL),
+			expectedCode: http.StatusNotFound,
+		},
+	}
 
-	t.Run("valid redirect", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodGet, "http://example.com:8080/"+token, nil)
-		res := executeRequest(req, r)
-		assert.Equal(t, http.StatusTemporaryRedirect, res.Code)
+	errRedirectBlocked := errors.New("HTTP redirect blocked")
+	redirPolicy := resty.RedirectPolicyFunc(func(_ *http.Request, _ []*http.Request) error {
+		return errRedirectBlocked
 	})
-	t.Run("invalid not found", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodGet, "/example", nil)
 
-		res := executeRequest(req, r)
-		assert.Equal(t, http.StatusNotFound, res.Code)
-	})
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			req := resty.New().
+				SetRedirectPolicy(redirPolicy).
+				R()
+			resp, err := req.Get(tt.url)
+
+			if !errors.Is(err, errRedirectBlocked) {
+				assert.NoError(t, err, "error making HTTP request")
+			}
+
+			assert.Equal(t, tt.expectedCode, resp.StatusCode(), "Response code didn't match expected")
+
+			if resp.StatusCode() == http.StatusTemporaryRedirect {
+				assert.Equal(t, originalURL, resp.Header().Get("Location"), "Location address didn't match expected")
+			}
+		})
+	}
 }
 
 func Test_shortURLRoutes_createShortURL(t *testing.T) {
 	usecase := usecase.New(repo.New())
-	r := chi.NewRouter()
-	r.Mount("/", NewShortURLRoutes(usecase, "localhost:8080", logger.New("error")))
+
+	baseURL := "http://localhost:1234"
+
+	srv := httptest.NewServer(NewShortURLRoutes(usecase, baseURL, logger.New("error")))
+	defer srv.Close()
 
 	cases := []struct {
-		name         string
-		method       string
-		url          string
-		endpoint     string
-		contentType  string
-		expectedCode int
+		name                string
+		bodyURL             string
+		contentType         string
+		expectedCode        int
+		expectedResponseURL bool
 	}{
 		{
-			name:         "invalid bad content type",
-			method:       http.MethodPost,
-			url:          "http://example.com",
-			endpoint:     "/",
+			name:         "method_post_bad_content_type",
+			bodyURL:      "http://example.com",
 			contentType:  "application/json",
+			expectedCode: http.StatusUnsupportedMediaType,
+		},
+		{
+			name:         "method_post_empty_body",
+			bodyURL:      "",
 			expectedCode: http.StatusBadRequest,
 		},
 		{
-			name:         "invalid bad body data",
-			method:       http.MethodPost,
-			url:          "example.com",
-			endpoint:     "/",
-			contentType:  "text/plain; charset=utf-8",
+			name:         "method_post_bad_body_data",
+			bodyURL:      "example.com",
 			expectedCode: http.StatusBadRequest,
 		},
 		{
-			name:         "valid first time created",
-			method:       http.MethodPost,
-			url:          "https://example.com",
-			endpoint:     "/",
-			contentType:  "text/plain; charset=utf-8",
-			expectedCode: http.StatusCreated,
-		},
-		{
-			name:         "valid url already exists",
-			method:       http.MethodPost,
-			url:          "https://example.com",
-			endpoint:     "/",
-			contentType:  "text/plain; charset=utf-8",
-			expectedCode: http.StatusOK,
+			name:                "method_post_success",
+			bodyURL:             "https://example.com",
+			expectedCode:        http.StatusCreated,
+			expectedResponseURL: true,
 		},
 	}
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			req := httptest.NewRequest(tt.method, tt.endpoint, strings.NewReader(tt.url))
-			req.Header.Set("Content-Type", tt.contentType)
+			req := resty.New().R()
+			req.Method = http.MethodPost
+			req.URL = srv.URL
 
-			res := executeRequest(req, r)
-			assert.Equal(t, tt.expectedCode, res.Code)
+			if tt.contentType != "" {
+				req.SetHeader("Content-Type", tt.contentType)
+			} else {
+				req.SetHeader("Content-Type", "text/plain; charset=utf-8")
+			}
+
+			req.SetBody(tt.bodyURL)
+
+			resp, err := req.Send()
+			assert.NoError(t, err, "error making HTTP request")
+
+			assert.Equal(t, tt.expectedCode, resp.StatusCode(), "Response code didn't match expected")
+
+			if tt.expectedResponseURL {
+				assert.True(t, strings.HasPrefix(string(resp.Body()), baseURL), "Response url prefix didn't match")
+			}
 		})
 	}
 }
