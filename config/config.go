@@ -27,9 +27,9 @@ func NewConfig() (*Config, error) {
 	cfg := &Config{}
 	parseFlags(cfg)
 
-  if err := cleanenv.ReadEnv(cfg); err != nil {
-    return nil, err
-  }
+	if err := cleanenv.ReadEnv(cfg); err != nil {
+		return nil, err
+	}
 
 	return cfg, nil
 }
