@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/go-resty/resty/v2"
 	"github.com/lovelydaemon/url-shortener/internal/logger"
 	"github.com/lovelydaemon/url-shortener/internal/usecase"
@@ -19,17 +20,19 @@ import (
 
 func Test_ShortURLRoutes_getOriginalURL(t *testing.T) {
 	usecase := usecase.New(repo.New())
-
-	srv := httptest.NewServer(NewShortURLRoutes(usecase, "", logger.New("error")))
+	handler := chi.NewRouter()
+	NewShortURLRoutes(handler, usecase, logger.New("error"), "")
+	srv := httptest.NewServer(handler)
 	defer srv.Close()
 
 	originalURL := "http://example.com"
-	client := resty.New().R()
-	client.Method = http.MethodPost
-	client.URL = srv.URL
-	client.SetHeader("Content-type", "text/plain; charset=utf-8")
-	client.SetBody(originalURL)
-	resp, err := client.Send()
+
+	resp, err := resty.New().
+		R().
+		SetHeader("Content-Type", "text/plain; charset=utf-8").
+		SetBody(originalURL).
+		Post(srv.URL)
+
 	require.NoError(t, err, "error making HTTP request")
 
 	respURL := string(resp.Body())
@@ -58,10 +61,10 @@ func Test_ShortURLRoutes_getOriginalURL(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			req := resty.New().
+			resp, err := resty.New().
 				SetRedirectPolicy(redirPolicy).
-				R()
-			resp, err := req.Get(tt.url)
+				R().
+				Get(tt.url)
 
 			if !errors.Is(err, errRedirectBlocked) {
 				assert.NoError(t, err, "error making HTTP request")
@@ -78,10 +81,9 @@ func Test_ShortURLRoutes_getOriginalURL(t *testing.T) {
 
 func Test_shortURLRoutes_createShortURL(t *testing.T) {
 	usecase := usecase.New(repo.New())
-
-	baseURL := "http://localhost:1234"
-
-	srv := httptest.NewServer(NewShortURLRoutes(usecase, baseURL, logger.New("error")))
+	handler := chi.NewRouter()
+	NewShortURLRoutes(handler, usecase, logger.New("error"), "")
+	srv := httptest.NewServer(handler)
 	defer srv.Close()
 
 	cases := []struct {
@@ -117,25 +119,23 @@ func Test_shortURLRoutes_createShortURL(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			req := resty.New().R()
-			req.Method = http.MethodPost
-			req.URL = srv.URL
-
+			contentType := "text/plain; charset=utf-8"
 			if tt.contentType != "" {
-				req.SetHeader("Content-Type", tt.contentType)
-			} else {
-				req.SetHeader("Content-Type", "text/plain; charset=utf-8")
+				contentType = tt.contentType
 			}
 
-			req.SetBody(tt.bodyURL)
+			resp, err := resty.New().
+				R().
+				SetHeader("Content-Type", contentType).
+				SetBody(tt.bodyURL).
+				Post(srv.URL)
 
-			resp, err := req.Send()
 			assert.NoError(t, err, "error making HTTP request")
 
 			assert.Equal(t, tt.expectedCode, resp.StatusCode(), "Response code didn't match expected")
 
 			if tt.expectedResponseURL {
-				assert.True(t, strings.HasPrefix(string(resp.Body()), baseURL), "Response url prefix didn't match")
+				assert.True(t, strings.HasPrefix(string(resp.Body()), srv.URL), "Response url prefix didn't match")
 			}
 		})
 	}

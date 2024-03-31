@@ -14,18 +14,15 @@ import (
 
 type shortURLRoutes struct {
 	u         usecase.ShortURL
-	shortAddr string
 	l         logger.Interface
+	shortAddr string
 }
 
-func NewShortURLRoutes(u usecase.ShortURL, shortAddr string, l logger.Interface) *chi.Mux {
-	r := &shortURLRoutes{u, shortAddr, l}
-	router := chi.NewRouter()
+func NewShortURLRoutes(handler *chi.Mux, u usecase.ShortURL, l logger.Interface, shortAddr string) {
+	r := &shortURLRoutes{u, l, shortAddr}
 
-	router.Get("/{token}", r.getOriginalURL)
-	router.Post("/", r.createShortURL)
-
-	return router
+	handler.Get("/{token}", r.getOriginalURL)
+	handler.Post("/", r.createShortURL)
 }
 
 func (r *shortURLRoutes) getOriginalURL(w http.ResponseWriter, req *http.Request) {

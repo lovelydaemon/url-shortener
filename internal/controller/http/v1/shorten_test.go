@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/go-resty/resty/v2"
 	"github.com/lovelydaemon/url-shortener/internal/logger"
 	"github.com/lovelydaemon/url-shortener/internal/usecase"
@@ -14,8 +15,9 @@ import (
 
 func Test_ShortenRoutes_createShortURL(t *testing.T) {
 	usecase := usecase.New(repo.New())
-
-	srv := httptest.NewServer(NewShortenRoutes(usecase, logger.New("error")))
+	handler := chi.NewRouter()
+	NewShortenRoutes(handler, usecase, logger.New("error"))
+	srv := httptest.NewServer(handler)
 	defer srv.Close()
 
 	cases := []struct {
@@ -50,19 +52,18 @@ func Test_ShortenRoutes_createShortURL(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			req := resty.New().R()
-			req.Method = http.MethodPost
-			req.URL = srv.URL + "/shorten"
+			contentType := "application/json"
 
 			if tt.contentType != "" {
-				req.SetHeader("Content-Type", tt.contentType)
-			} else {
-				req.SetHeader("Content-Type", "application/json")
+				contentType = tt.contentType
 			}
 
-			req.SetBody(tt.body)
+			resp, err := resty.New().
+				R().
+				SetHeader("Content-Type", contentType).
+				SetBody(tt.body).
+				Post(srv.URL + "/api/shorten")
 
-			resp, err := req.Send()
 			assert.NoError(t, err, "error making HTTP request")
 
 			assert.Equal(t, tt.expectedCode, resp.StatusCode(), "Response code didn't match expected")
