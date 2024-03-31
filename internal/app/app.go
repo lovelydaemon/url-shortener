@@ -20,11 +20,8 @@ func Run(cfg *config.Config) error {
 	)
 
 	// HTTP Server
-	r := v1.NewRouter()
-	r.Mount("/", v1.NewShortURLRoutes(shortURLUseCase, cfg.BaseURL, l))
-	r.Mount("/api", v1.NewShortenRoutes(shortURLUseCase, l))
-
-	httpServer := httpserver.New(r, httpserver.Addr(cfg.HTTP.Addr))
+	handler := v1.NewRouter(shortURLUseCase, l, cfg)
+	httpServer := httpserver.New(handler, httpserver.Addr(cfg.HTTP.Addr))
 	l.Info("Server running on " + httpServer.Addr)
 	return httpServer.ListenAndServe()
 }

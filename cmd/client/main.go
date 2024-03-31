@@ -3,16 +3,16 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"strings"
+
+	"github.com/go-resty/resty/v2"
 )
 
 func main() {
-	endpoint := "http://localhost:3000/"
+	endpoint := "http://localhost:8080/"
 
-	fmt.Println("Enter long URL")
+	fmt.Println("Enter your URL")
 
 	reader := bufio.NewReader(os.Stdin)
 
@@ -23,27 +23,16 @@ func main() {
 
 	url = strings.TrimSuffix(url, "\n")
 
-	client := &http.Client{}
+	client := resty.New()
+	resp, err := client.R().
+		SetHeader("Content-Type", "text/plain; charset=utf-8").
+		SetBody(url).
+		Post(endpoint)
 
-	req, err := http.NewRequest(http.MethodPost, endpoint, strings.NewReader(url))
 	if err != nil {
 		panic(err)
 	}
 
-	req.Header.Add("Content-Type", "text/plain; charset=utf-8")
-
-	res, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("Status code ", res.Status)
-	defer res.Body.Close()
-
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(string(body))
+	fmt.Println("Status code ", resp.Status())
+	fmt.Println(string(resp.Body()))
 }
