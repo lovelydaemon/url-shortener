@@ -40,7 +40,9 @@ func (c *compressReader) Close() error {
 func RequestDecompress(next http.Handler) http.Handler {
   return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     contentEncoding := r.Header.Get("Content-Encoding")
-    if !strings.Contains(contentEncoding, "gzip"){
+    contentType := r.Header.Get("Content-Type")
+    sendsGzip := strings.Contains(contentEncoding, "gzip") && strings.Contains(contentType, "application/x-gzip")
+    if !sendsGzip {
       next.ServeHTTP(w, r)
       return
     }
