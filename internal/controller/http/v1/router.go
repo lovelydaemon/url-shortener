@@ -15,6 +15,8 @@ func NewRouter(u usecase.ShortURL, l logger.Interface, cfg *config.Config) *chi.
 	// Middlewares
 	handler.Use(middlewares.Logger(l))
 	handler.Use(middleware.Recoverer)
+  handler.Use(middlewares.RequestDecompress)
+  handler.Use(middleware.Compress(5, "application/json", "text/html"))
 
 	NewShortURLRoutes(handler, u, l, cfg.BaseURL)
 	NewShortenRoutes(handler, u, l)

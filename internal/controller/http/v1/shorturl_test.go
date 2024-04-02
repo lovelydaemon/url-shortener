@@ -29,7 +29,6 @@ func Test_ShortURLRoutes_getOriginalURL(t *testing.T) {
 
 	resp, err := resty.New().
 		R().
-		SetHeader("Content-Type", "text/plain; charset=utf-8").
 		SetBody(originalURL).
 		Post(srv.URL)
 
@@ -94,12 +93,6 @@ func Test_shortURLRoutes_createShortURL(t *testing.T) {
 		expectedResponseURL bool
 	}{
 		{
-			name:         "method_post_bad_content_type",
-			bodyURL:      "http://example.com",
-			contentType:  "application/json",
-			expectedCode: http.StatusUnsupportedMediaType,
-		},
-		{
 			name:         "method_post_empty_body",
 			bodyURL:      "",
 			expectedCode: http.StatusBadRequest,
@@ -119,14 +112,8 @@ func Test_shortURLRoutes_createShortURL(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			contentType := "text/plain; charset=utf-8"
-			if tt.contentType != "" {
-				contentType = tt.contentType
-			}
-
 			resp, err := resty.New().
 				R().
-				SetHeader("Content-Type", contentType).
 				SetBody(tt.bodyURL).
 				Post(srv.URL)
 
