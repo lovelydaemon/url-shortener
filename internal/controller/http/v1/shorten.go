@@ -20,7 +20,7 @@ type shortenRoutes struct {
 func NewShortenRoutes(handler *chi.Mux, u usecase.ShortURL, l logger.Interface) {
 	r := shortenRoutes{u, l}
 
-	handler.Post("/api/shorten", r.createShortURL)
+	handler.Post("/api/shorten", r.generateShortURL)
 }
 
 type createShortURLRequest struct {
@@ -31,7 +31,7 @@ type createShortURLResponse struct {
 	Result string `json:"result"`
 }
 
-func (r *shortenRoutes) createShortURL(w http.ResponseWriter, reqst *http.Request) {
+func (r *shortenRoutes) generateShortURL(w http.ResponseWriter, reqst *http.Request) {
 	contentType := reqst.Header.Get("Content-Type")
 	if contentType != "application/json" {
 		r.l.Info("Bad content type", contentType)
@@ -54,7 +54,12 @@ func (r *shortenRoutes) createShortURL(w http.ResponseWriter, reqst *http.Reques
 	}
 
 	token := rnd.NewRandomString(9)
-	r.u.Create(req.URL, token)
+
+	if err := r.u.Store(req.URL, token); err != nil {
+		r.l.Error(err, "http - v1 - generateShortURL")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	resp := createShortURLResponse{
 		Result: urlc.CreateValidURL(reqst.Host, token),

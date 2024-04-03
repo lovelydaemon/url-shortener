@@ -1,5 +1,11 @@
 package usecase
 
+import (
+	"fmt"
+
+	"github.com/lovelydaemon/url-shortener/internal/entity"
+)
+
 type ShortURLUseCase struct {
 	repo ShortURLRepo
 }
@@ -10,11 +16,13 @@ func New(r ShortURLRepo) *ShortURLUseCase {
 	}
 }
 
-func (uc *ShortURLUseCase) Get(url string) (string, bool) {
-	u, ok := uc.repo.Get(url)
-	return u, ok
+func (uc *ShortURLUseCase) Get(token string) (entity.StorageItem, bool) {
+	return uc.repo.Get(token)
 }
 
-func (uc *ShortURLUseCase) Create(originalURL, token string) {
-	uc.repo.Create(originalURL, token)
+func (uc *ShortURLUseCase) Store(originalURL, token string) error {
+	if err := uc.repo.Store(originalURL, token); err != nil {
+		return fmt.Errorf("ShortURLUseCase - Store - uc.repo.Store: %w", err)
+	}
+	return nil
 }

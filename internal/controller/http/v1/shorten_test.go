@@ -8,13 +8,18 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-resty/resty/v2"
 	"github.com/lovelydaemon/url-shortener/internal/logger"
+	"github.com/lovelydaemon/url-shortener/internal/storage"
 	"github.com/lovelydaemon/url-shortener/internal/usecase"
 	"github.com/lovelydaemon/url-shortener/internal/usecase/repo"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_ShortenRoutes_createShortURL(t *testing.T) {
-	usecase := usecase.New(repo.New())
+	st, err := storage.NewStorage("")
+	require.NoError(t, err, "Couldn't create storage")
+
+	usecase := usecase.New(repo.New(st))
 	handler := chi.NewRouter()
 	NewShortenRoutes(handler, usecase, logger.New("error"))
 	srv := httptest.NewServer(handler)
