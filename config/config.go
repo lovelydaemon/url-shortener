@@ -10,6 +10,7 @@ type (
 	Config struct {
 		HTTP
 		Log
+		Storage
 		BaseURL string `env:"BASE_URL"`
 	}
 
@@ -19,6 +20,10 @@ type (
 
 	Log struct {
 		Level string `env:"LOG_LEVEL"`
+	}
+
+	Storage struct {
+		Path string `env:"FILE_STORAGE_PATH"`
 	}
 )
 
@@ -37,5 +42,6 @@ func NewConfig() (*Config, error) {
 func parseFlags(cfg *Config) {
 	flag.StringVar(&cfg.HTTP.Addr, "a", "localhost:8080", "port on which the server will run")
 	flag.StringVar(&cfg.BaseURL, "b", "", "base url for short url output")
+	flag.StringVar(&cfg.Storage.Path, "f", "./tmp/short-url-db.json", "path to the file where the data will be saved")
 	flag.Parse()
 }

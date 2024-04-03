@@ -1,20 +1,38 @@
 package repo
 
+import (
+	"github.com/lovelydaemon/url-shortener/internal/entity"
+	"github.com/lovelydaemon/url-shortener/internal/storage"
+)
+
 type ShortURLRepo struct {
-	store map[string]string
+	storage *storage.Storage
 }
 
-func New() *ShortURLRepo {
+func New(storage *storage.Storage) *ShortURLRepo {
 	return &ShortURLRepo{
-		store: make(map[string]string),
+		storage: storage,
 	}
 }
 
-func (r *ShortURLRepo) Get(url string) (string, bool) {
-	u, ok := r.store[url]
-	return u, ok
+func (r *ShortURLRepo) Get(token string) (entity.StorageItem, bool) {
+	for _, v := range r.storage.Store {
+		if v.Token == token {
+			return v, true
+		}
+	}
+
+	return entity.StorageItem{}, false
 }
 
-func (r *ShortURLRepo) Create(originalURL, token string) {
-	r.store[token] = originalURL
+func (r *ShortURLRepo) Store(originalURL, token string) error {
+	uuid := len(r.storage.Store) + 1
+
+	storageItem := entity.StorageItem{
+		UUID:        uuid,
+		Token:       token,
+		OriginalURL: originalURL,
+	}
+
+	return r.storage.Write(storageItem)
 }

@@ -1,13 +1,15 @@
 package usecase
 
+import "github.com/lovelydaemon/url-shortener/internal/entity"
+
 type (
 	ShortURL interface {
-		Get(url string) (string, bool)
-		Create(originalUrl, token string)
+		Get(token string) (entity.StorageItem, bool)
+		Store(originalUrl, token string) error
 	}
 
 	ShortURLRepo interface {
-		Get(url string) (string, bool)
-		Create(originalUrl, token string)
+		Get(token string) (entity.StorageItem, bool)
+		Store(originalUrl, token string) error
 	}
 )
