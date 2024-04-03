@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/go-chi/chi/v5"
@@ -97,7 +96,7 @@ func Test_shortURLRoutes_createShortURL(t *testing.T) {
 		bodyURL             string
 		contentType         string
 		expectedCode        int
-		expectedResponseURL bool
+    expectedBody string
 	}{
 		{
 			name:         "method_post_empty_body",
@@ -113,7 +112,7 @@ func Test_shortURLRoutes_createShortURL(t *testing.T) {
 			name:                "method_post_success",
 			bodyURL:             "https://example.com",
 			expectedCode:        http.StatusCreated,
-			expectedResponseURL: true,
+      expectedBody: fmt.Sprintf("%s/.........", srv.URL),
 		},
 	}
 
@@ -128,8 +127,8 @@ func Test_shortURLRoutes_createShortURL(t *testing.T) {
 
 			assert.Equal(t, tt.expectedCode, resp.StatusCode(), "Response code didn't match expected")
 
-			if tt.expectedResponseURL {
-				assert.True(t, strings.HasPrefix(string(resp.Body()), srv.URL), "Response url prefix didn't match")
+			if tt.expectedBody != "" {
+        assert.Regexp(t, tt.expectedBody, string(resp.Body()), "Response url didn't match expected")
 			}
 		})
 	}
