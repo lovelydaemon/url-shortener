@@ -10,9 +10,9 @@ import (
 
 type Storage struct {
 	Store  []entity.StorageItem
-	File   *os.File
-	Writer *json.Encoder
-	Reader *json.Decoder
+	file   *os.File
+	writer *json.Encoder
+	reader *json.Decoder
 }
 
 func NewStorage(path string) (*Storage, error) {
@@ -28,10 +28,10 @@ func NewStorage(path string) (*Storage, error) {
 		return nil, err
 	}
 
-	storage.File = file
-	storage.Writer = json.NewEncoder(file)
-	storage.Reader = json.NewDecoder(file)
-	storage.Reader.UseNumber()
+	storage.file = file
+	storage.writer = json.NewEncoder(file)
+	storage.reader = json.NewDecoder(file)
+	storage.reader.UseNumber()
 
 	if err := storage.LoadStore(); err != nil {
 		return nil, err
@@ -41,7 +41,7 @@ func NewStorage(path string) (*Storage, error) {
 }
 
 func (s *Storage) LoadStore() error {
-	fInfo, err := s.File.Stat()
+	fInfo, err := s.file.Stat()
 	if err != nil {
 		return err
 	}
@@ -50,24 +50,24 @@ func (s *Storage) LoadStore() error {
 		return nil
 	}
 
-	return s.Reader.Decode(&s.Store)
+	return s.reader.Decode(&s.Store)
 }
 
 func (s *Storage) Write(item entity.StorageItem) error {
 	s.Store = append(s.Store, item)
-	if s.File == nil {
+	if s.file == nil {
 		return nil
 	}
 
-	if err := s.File.Truncate(0); err != nil {
+	if err := s.file.Truncate(0); err != nil {
 		return fmt.Errorf("ShortURLRepo - Store - r.file.Truncate: %w", err)
 	}
 
-	if _, err := s.File.Seek(0, 0); err != nil {
+	if _, err := s.file.Seek(0, 0); err != nil {
 		return fmt.Errorf("ShortURLRepo - Store - r.file.Seek: %w", err)
 	}
 
-	if err := s.Writer.Encode(s.Store); err != nil {
+	if err := s.writer.Encode(s.Store); err != nil {
 		return fmt.Errorf("ShortURLRepo - Store - r.writer.Encode: %w", err)
 	}
 
@@ -75,5 +75,5 @@ func (s *Storage) Write(item entity.StorageItem) error {
 }
 
 func (s *Storage) Close() error {
-	return s.File.Close()
+	return s.file.Close()
 }

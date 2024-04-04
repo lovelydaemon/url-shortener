@@ -92,11 +92,11 @@ func Test_shortURLRoutes_createShortURL(t *testing.T) {
 	defer srv.Close()
 
 	cases := []struct {
-		name                string
-		bodyURL             string
-		contentType         string
-		expectedCode        int
-    expectedBody string
+		name         string
+		bodyURL      string
+		contentType  string
+		expectedCode int
+		expectedBody string
 	}{
 		{
 			name:         "method_post_empty_body",
@@ -109,10 +109,10 @@ func Test_shortURLRoutes_createShortURL(t *testing.T) {
 			expectedCode: http.StatusBadRequest,
 		},
 		{
-			name:                "method_post_success",
-			bodyURL:             "https://example.com",
-			expectedCode:        http.StatusCreated,
-      expectedBody: fmt.Sprintf("%s/.........", srv.URL),
+			name:         "method_post_success",
+			bodyURL:      "https://example.com",
+			expectedCode: http.StatusCreated,
+			expectedBody: fmt.Sprintf("%s/.........", srv.URL),
 		},
 	}
 
@@ -128,7 +128,7 @@ func Test_shortURLRoutes_createShortURL(t *testing.T) {
 			assert.Equal(t, tt.expectedCode, resp.StatusCode(), "Response code didn't match expected")
 
 			if tt.expectedBody != "" {
-        assert.Regexp(t, tt.expectedBody, string(resp.Body()), "Response url didn't match expected")
+				assert.Regexp(t, tt.expectedBody, string(resp.Body()), "Response url didn't match expected")
 			}
 		})
 	}
