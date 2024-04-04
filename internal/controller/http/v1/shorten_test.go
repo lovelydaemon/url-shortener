@@ -32,32 +32,32 @@ func Test_ShortenRoutes_createShortURL(t *testing.T) {
 		contentType         string
 		expectedCode        int
 		expectedContentType string
-    expectedBody string
+		expectedBody        string
 	}{
 		{
 			name:         "method_post_bad_content_type",
 			body:         `{"url": "http://example.com"}`,
 			contentType:  "text/plain; charset=utf-8",
 			expectedCode: http.StatusUnsupportedMediaType,
-      expectedBody: "",
+			expectedBody: "",
 		},
 		{
 			name:         "method_post_without_body",
 			expectedCode: http.StatusInternalServerError,
-      expectedBody: "",
+			expectedBody: "",
 		},
 		{
 			name:         "method_post_invalid_body_data",
 			body:         `{}`,
 			expectedCode: http.StatusBadRequest,
-      expectedBody: "",
+			expectedBody: "",
 		},
 		{
 			name:                "method_post_success",
 			body:                `{"url": "http://example.com"}`,
 			expectedCode:        http.StatusCreated,
 			expectedContentType: "application/json",
-      expectedBody: fmt.Sprintf("%s/.........", srv.URL),
+			expectedBody:        fmt.Sprintf("%s/.........", srv.URL),
 		},
 	}
 
@@ -83,9 +83,9 @@ func Test_ShortenRoutes_createShortURL(t *testing.T) {
 				assert.Equal(t, tt.expectedContentType, resp.Header().Get("Content-Type"), "Response Content-Type didn't match expected")
 			}
 
-      if tt.expectedBody != "" {
-        assert.Regexp(t, tt.expectedBody, string(resp.Body()), "Response url didn't match expected")
-      }
+			if tt.expectedBody != "" {
+				assert.Regexp(t, tt.expectedBody, string(resp.Body()), "Response url didn't match expected")
+			}
 		})
 	}
 }
