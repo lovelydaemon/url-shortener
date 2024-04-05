@@ -29,7 +29,7 @@ type (
 
 	PG struct {
 		PoolMax int    `env:"PG_POOL_MAX"`
-		URL     string `env-required:"true" env:"DATABASE_DSN"`
+		URL     string `env:"DATABASE_DSN"`
 	}
 )
 
