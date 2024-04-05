@@ -9,15 +9,14 @@ import (
 	"github.com/lovelydaemon/url-shortener/internal/usecase"
 )
 
-func NewRouter(u usecase.ShortURL, l logger.Interface, cfg *config.Config) *chi.Mux {
-	handler := chi.NewRouter()
-
+func NewRouter(handler *chi.Mux, l logger.Interface, cfg *config.Config, u usecase.ShortURL, p usecase.Ping) *chi.Mux {
 	// Middlewares
 	handler.Use(middlewares.Logger(l))
 	handler.Use(middleware.Recoverer)
 	handler.Use(middlewares.RequestDecompress)
 	handler.Use(middleware.Compress(5, "application/json", "text/html"))
 
+	NewPingRoutes(handler, p, l)
 	NewShortURLRoutes(handler, u, l, cfg.BaseURL)
 	NewShortenRoutes(handler, u, l)
 

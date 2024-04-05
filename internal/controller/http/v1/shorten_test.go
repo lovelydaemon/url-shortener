@@ -20,7 +20,7 @@ func Test_ShortenRoutes_createShortURL(t *testing.T) {
 	st, err := storage.NewStorage("")
 	require.NoError(t, err, "Couldn't create storage")
 
-	usecase := usecase.New(repo.New(st))
+	usecase := usecase.NewShortURLUseCase(repo.NewShortURLRepo(st))
 	handler := chi.NewRouter()
 	NewShortenRoutes(handler, usecase, logger.New("error"))
 	srv := httptest.NewServer(handler)
