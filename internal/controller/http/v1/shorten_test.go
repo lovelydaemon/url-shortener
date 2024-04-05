@@ -22,7 +22,7 @@ func Test_ShortenRoutes_createShortURL(t *testing.T) {
 
 	usecase := usecase.NewShortURLUseCase(repo.NewShortURLRepo(st))
 	handler := chi.NewRouter()
-	NewShortenRoutes(handler, usecase, logger.New("error"))
+	NewShortenRoutes(handler, logger.New("error"), usecase)
 	srv := httptest.NewServer(handler)
 	defer srv.Close()
 
