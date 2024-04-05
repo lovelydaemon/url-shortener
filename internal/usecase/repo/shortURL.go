@@ -9,7 +9,7 @@ type ShortURLRepo struct {
 	storage *storage.Storage
 }
 
-func New(storage *storage.Storage) *ShortURLRepo {
+func NewShortURLRepo(storage *storage.Storage) *ShortURLRepo {
 	return &ShortURLRepo{
 		storage: storage,
 	}

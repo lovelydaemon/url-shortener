@@ -10,7 +10,7 @@ type ShortURLUseCase struct {
 	repo ShortURLRepo
 }
 
-func New(r ShortURLRepo) *ShortURLUseCase {
+func NewShortURLUseCase(r ShortURLRepo) *ShortURLUseCase {
 	return &ShortURLUseCase{
 		repo: r,
 	}
