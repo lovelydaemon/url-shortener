@@ -40,7 +40,10 @@ func Run(cfg *config.Config) error {
 
 	// HTTP Server
 	handler := chi.NewRouter()
-	v1.NewRouter(handler, l, cfg, shortURLUseCase, pingUseCase)
+	handler = v1.NewRouter(handler, l)
+	v1.NewShortURLRoutes(handler, l, shortURLUseCase, cfg.BaseURL)
+	v1.NewShortenRoutes(handler, l, shortURLUseCase)
+	v1.NewPingRoutes(handler, l, pingUseCase)
 
 	httpServer := httpserver.New(handler, httpserver.Addr(cfg.HTTP.Addr))
 	l.Info("Server running on " + httpServer.Addr)

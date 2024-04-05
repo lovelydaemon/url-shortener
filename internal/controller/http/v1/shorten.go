@@ -17,7 +17,7 @@ type shortenRoutes struct {
 	l logger.Interface
 }
 
-func NewShortenRoutes(handler *chi.Mux, u usecase.ShortURL, l logger.Interface) {
+func NewShortenRoutes(handler *chi.Mux, l logger.Interface, u usecase.ShortURL) {
 	r := shortenRoutes{u, l}
 
 	handler.Post("/api/shorten", r.generateShortURL)

@@ -24,7 +24,7 @@ func Test_ShortURLRoutes_getOriginalURL(t *testing.T) {
 
 	usecase := usecase.NewShortURLUseCase(repo.NewShortURLRepo(st))
 	handler := chi.NewRouter()
-	NewShortURLRoutes(handler, usecase, logger.New("error"), "")
+	NewShortURLRoutes(handler, logger.New("error"), usecase, "")
 	srv := httptest.NewServer(handler)
 	defer srv.Close()
 
@@ -87,7 +87,7 @@ func Test_shortURLRoutes_createShortURL(t *testing.T) {
 
 	usecase := usecase.NewShortURLUseCase(repo.NewShortURLRepo(st))
 	handler := chi.NewRouter()
-	NewShortURLRoutes(handler, usecase, logger.New("error"), "")
+	NewShortURLRoutes(handler, logger.New("error"), usecase, "")
 	srv := httptest.NewServer(handler)
 	defer srv.Close()
 

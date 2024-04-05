@@ -14,7 +14,7 @@ type pingRoutes struct {
 	l logger.Interface
 }
 
-func NewPingRoutes(handler *chi.Mux, u usecase.Ping, l logger.Interface) {
+func NewPingRoutes(handler *chi.Mux, l logger.Interface, u usecase.Ping) {
 	r := pingRoutes{u, l}
 
 	handler.Get("/ping", r.ping)
