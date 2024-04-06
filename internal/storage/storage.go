@@ -9,15 +9,15 @@ import (
 )
 
 type Storage struct {
-	Store  []entity.StorageItem
+	store  []entity.StorageItem
 	file   *os.File
 	writer *json.Encoder
 	reader *json.Decoder
 }
 
-func NewStorage(path string) (*Storage, error) {
+func New(path string) (*Storage, error) {
 	storage := &Storage{
-		Store: make([]entity.StorageItem, 0),
+		store: make([]entity.StorageItem, 0),
 	}
 	if path == "" {
 		return storage, nil
@@ -50,11 +50,11 @@ func (s *Storage) LoadStore() error {
 		return nil
 	}
 
-	return s.reader.Decode(&s.Store)
+	return s.reader.Decode(&s.store)
 }
 
 func (s *Storage) Write(item entity.StorageItem) error {
-	s.Store = append(s.Store, item)
+	s.store = append(s.store, item)
 	if s.file == nil {
 		return nil
 	}
@@ -67,11 +67,24 @@ func (s *Storage) Write(item entity.StorageItem) error {
 		return fmt.Errorf("ShortURLRepo - Store - r.file.Seek: %w", err)
 	}
 
-	if err := s.writer.Encode(s.Store); err != nil {
+	if err := s.writer.Encode(s.store); err != nil {
 		return fmt.Errorf("ShortURLRepo - Store - r.writer.Encode: %w", err)
 	}
 
 	return nil
+}
+
+func (s *Storage) Get(token string) (entity.StorageItem, bool) {
+	for _, v := range s.store {
+		if v.Token == token {
+			return v, true
+		}
+	}
+	return entity.StorageItem{}, false
+}
+
+func (s *Storage) Len() int {
+	return len(s.store)
 }
 
 func (s *Storage) Close() error {

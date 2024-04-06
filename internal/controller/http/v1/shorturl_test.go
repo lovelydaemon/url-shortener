@@ -19,7 +19,7 @@ import (
 )
 
 func Test_ShortURLRoutes_getOriginalURL(t *testing.T) {
-	st, err := storage.NewStorage("")
+	st, err := storage.New("")
 	require.NoError(t, err, "Couldn't create storage")
 
 	usecase := usecase.NewShortURLUseCase(repo.NewShortURLRepo(st))
@@ -82,7 +82,7 @@ func Test_ShortURLRoutes_getOriginalURL(t *testing.T) {
 }
 
 func Test_shortURLRoutes_createShortURL(t *testing.T) {
-	st, err := storage.NewStorage("")
+	st, err := storage.New("")
 	require.NoError(t, err, "Couldn't create storage")
 
 	usecase := usecase.NewShortURLUseCase(repo.NewShortURLRepo(st))

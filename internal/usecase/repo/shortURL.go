@@ -16,17 +16,11 @@ func NewShortURLRepo(storage *storage.Storage) *ShortURLRepo {
 }
 
 func (r *ShortURLRepo) Get(token string) (entity.StorageItem, bool) {
-	for _, v := range r.storage.Store {
-		if v.Token == token {
-			return v, true
-		}
-	}
-
-	return entity.StorageItem{}, false
+	return r.storage.Get(token)
 }
 
 func (r *ShortURLRepo) Store(originalURL, token string) error {
-	uuid := len(r.storage.Store) + 1
+	uuid := r.storage.Len() + 1
 
 	storageItem := entity.StorageItem{
 		UUID:        uuid,
