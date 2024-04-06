@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -21,7 +20,7 @@ func NewPingRoutes(handler *chi.Mux, l logger.Interface, u usecase.Ping) {
 }
 
 func (r *pingRoutes) ping(w http.ResponseWriter, req *http.Request) {
-	ctx := context.Background()
+	ctx := req.Context()
 	if err := r.u.Ping(ctx); err != nil {
 		r.l.Info("Couldn't ping database")
 		w.WriteHeader(http.StatusInternalServerError)
