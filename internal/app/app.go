@@ -28,7 +28,7 @@ func Run(cfg *config.Config) error {
 	defer pg.Close()
 
 	// File Storage
-	st, err := storage.NewStorage(cfg.Storage.Path)
+	st, err := storage.New(cfg.Storage.Path)
 	if err != nil {
 		l.Fatal(fmt.Errorf("Couldn't open file: %w", err))
 	}

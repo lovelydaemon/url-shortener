@@ -17,7 +17,7 @@ import (
 )
 
 func Test_ShortenRoutes_createShortURL(t *testing.T) {
-	st, err := storage.NewStorage("")
+	st, err := storage.New("")
 	require.NoError(t, err, "Couldn't create storage")
 
 	usecase := usecase.NewShortURLUseCase(repo.NewShortURLRepo(st))
