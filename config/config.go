@@ -12,6 +12,7 @@ type (
 		Log
 		Storage
 		PG
+
 		BaseURL string `env:"BASE_URL"`
 	}
 
@@ -33,8 +34,8 @@ type (
 	}
 )
 
-// NewConfig returns app config
-func NewConfig() (*Config, error) {
+// New returns app config
+func New() (*Config, error) {
 	cfg := &Config{}
 	parseFlags(cfg)
 
