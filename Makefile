@@ -1,23 +1,35 @@
-.PHONY: build
-build:
+build: ### build
 	go build -v ./cmd/app
 	go build -v ./cmd/client
+.PHONY: build
 
-.PHONY: test
-test:
+test: ### run test
 	go test -v -cover -race -timeout 30s ./internal/...
+.PHONY: test
 
-.PHONY: fmt
-fmt:
+fmt: ### run format
 	go fmt ./...
+.PHONY: fmt
 
-.PHONY: vet
-vet:
+vet: ### run linter
 	go vet ./...
+.PHONY: vet 
 
-.PHONY: coverage
-coverage:
+mock: ### run mockgen
+	mockgen -source=./internal/usecase/interfaces.go -destination=./internal/usecase/mocks.go -package=usecase
+.PHONY: mock 
+
+migrate-create: ### create new migration
+	migrate create -ext sql -dir migrations 'migrate_name'
+.PHONY: migrate-create
+
+migrate-up: ### migration up
+	migrate -path migrations -database '$(DATABASE_DSN)' up
+.PHONY: migrate-up
+
+coverage: ### run html cover file
 	go test -race -timeout 30s -coverprofile=coverage.out ./internal/...
 	go tool cover -html=coverage.out
+.PHONY: coverage
 
 .DEFAULT_GOAL := build
