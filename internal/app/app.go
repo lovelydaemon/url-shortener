@@ -3,6 +3,9 @@ package app
 
 import (
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/lovelydaemon/url-shortener/config"
@@ -16,7 +19,10 @@ import (
 )
 
 // Run creates objects via constructors
-func Run(cfg *config.Config) error {
+func Run(cfg *config.Config) {
+	// Migrations
+	ApplyMigrations(cfg.PG.URL)
+
 	// Logger
 	l := logger.New(cfg.Log.Level)
 
@@ -27,25 +33,47 @@ func Run(cfg *config.Config) error {
 	}
 	defer pg.Close()
 
-	// File Storage
 	st, err := storage.New(cfg.Storage.Path)
 	if err != nil {
 		l.Fatal(fmt.Errorf("Couldn't open file: %w", err))
 	}
 	defer st.Close()
 
+	var shortenRepo usecase.ShortenRepo
+	if cfg.PG.URL != "" {
+		shortenRepo = repo.NewShortenPG(pg)
+	} else {
+		shortenRepo = repo.NewShortenST(st)
+	}
+
 	// Use case
-	shortURLUseCase := usecase.NewShortURLUseCase(repo.NewShortURLRepo(st))
-	pingUseCase := usecase.NewPingUseCase(repo.NewPingRepo(pg))
+	shortenUC := usecase.NewShorten(shortenRepo)
+	pingUC := usecase.NewPing(repo.NewPing(pg))
 
 	// HTTP Server
 	handler := chi.NewRouter()
 	handler = v1.NewRouter(handler, l)
-	v1.NewShortURLRoutes(handler, l, shortURLUseCase, cfg.BaseURL)
-	v1.NewShortenRoutes(handler, l, shortURLUseCase)
-	v1.NewPingRoutes(handler, l, pingUseCase)
+	v1.NewShortURLRoutes(handler, l, shortenUC, cfg.BaseURL)
+	v1.NewShortenRoutes(handler, l, shortenUC)
+	v1.NewPingRoutes(handler, l, pingUC)
 
 	httpServer := httpserver.New(handler, httpserver.Addr(cfg.HTTP.Addr))
-	l.Info("Server running on " + httpServer.Addr)
-	return httpServer.ListenAndServe()
+	l.Info("Server running on " + httpServer.Addr())
+
+	// Waiting signal
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
+
+	select {
+	case s := <-interrupt:
+		l.Info("app - Run - signal: " + s.String())
+	case err = <-httpServer.Notify():
+		l.Error(fmt.Errorf("app - Run - httpServer.Notify: %w", err))
+	}
+
+	// Shutdown
+	err = httpServer.Shutdown()
+	if err != nil {
+		l.Error(fmt.Errorf("app - Run - httpServer.Shutdown: %w", err))
+	}
 }

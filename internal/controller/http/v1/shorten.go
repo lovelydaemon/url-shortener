@@ -7,17 +7,17 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/lovelydaemon/url-shortener/internal/logger"
-	"github.com/lovelydaemon/url-shortener/internal/rnd"
+	"github.com/lovelydaemon/url-shortener/internal/random"
 	urlc "github.com/lovelydaemon/url-shortener/internal/url"
 	"github.com/lovelydaemon/url-shortener/internal/usecase"
 )
 
 type shortenRoutes struct {
-	u usecase.ShortURL
+	u usecase.Shorten
 	l logger.Interface
 }
 
-func NewShortenRoutes(handler *chi.Mux, l logger.Interface, u usecase.ShortURL) {
+func NewShortenRoutes(handler *chi.Mux, l logger.Interface, u usecase.Shorten) {
 	r := shortenRoutes{u, l}
 
 	handler.Post("/api/shorten", r.generateShortURL)
@@ -31,8 +31,10 @@ type createShortURLResponse struct {
 	Result string `json:"result"`
 }
 
-func (r *shortenRoutes) generateShortURL(w http.ResponseWriter, reqst *http.Request) {
-	contentType := reqst.Header.Get("Content-Type")
+func (r *shortenRoutes) generateShortURL(w http.ResponseWriter, request *http.Request) {
+	ctx := request.Context()
+
+	contentType := request.Header.Get("Content-Type")
 	if contentType != "application/json" {
 		r.l.Info("Bad content type", contentType)
 		w.WriteHeader(http.StatusUnsupportedMediaType)
@@ -40,7 +42,7 @@ func (r *shortenRoutes) generateShortURL(w http.ResponseWriter, reqst *http.Requ
 	}
 
 	var req createShortURLRequest
-	dec := json.NewDecoder(reqst.Body)
+	dec := json.NewDecoder(request.Body)
 	if err := dec.Decode(&req); err != nil {
 		r.l.Info("cannot decode request JSON body")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -53,16 +55,16 @@ func (r *shortenRoutes) generateShortURL(w http.ResponseWriter, reqst *http.Requ
 		return
 	}
 
-	token := rnd.NewRandomString(9)
+	token := random.NewRandomString(9)
 
-	if err := r.u.Store(req.URL, token); err != nil {
+	if err := r.u.Store(ctx, req.URL, token); err != nil {
 		r.l.Error(err, "http - v1 - generateShortURL")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	resp := createShortURLResponse{
-		Result: urlc.CreateValidURL(reqst.Host, token),
+		Result: urlc.CreateValidURL(request.Host, token),
 	}
 
 	w.Header().Set("Content-Type", "application/json")

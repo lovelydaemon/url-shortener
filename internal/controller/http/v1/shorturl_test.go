@@ -9,60 +9,56 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-resty/resty/v2"
+	"github.com/lovelydaemon/url-shortener/internal/entity"
 	"github.com/lovelydaemon/url-shortener/internal/logger"
-	"github.com/lovelydaemon/url-shortener/internal/storage"
-	"github.com/lovelydaemon/url-shortener/internal/usecase"
-	"github.com/lovelydaemon/url-shortener/internal/usecase/repo"
+	"go.uber.org/mock/gomock"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func Test_ShortURLRoutes_getOriginalURL(t *testing.T) {
-	st, err := storage.New("")
-	require.NoError(t, err, "Couldn't create storage")
+	shorten, repo := shorten(t)
 
-	usecase := usecase.NewShortURLUseCase(repo.NewShortURLRepo(st))
 	handler := chi.NewRouter()
-	NewShortURLRoutes(handler, logger.New("error"), usecase, "")
+	NewShortURLRoutes(handler, logger.New("error"), shorten, "")
 	srv := httptest.NewServer(handler)
 	defer srv.Close()
 
 	originalURL := "http://example.com"
+	token := "abcdefg"
 
-	resp, err := resty.New().
-		R().
-		SetBody(originalURL).
-		Post(srv.URL)
-
-	require.NoError(t, err, "error making HTTP request")
-
-	respURL := string(resp.Body())
-
-	cases := []struct {
+	tests := []struct {
 		name         string
 		url          string
+		mock         func()
 		expectedCode int
 	}{
 		{
-			name:         "method_get_success_redirect",
-			url:          respURL,
+			name: "success_redirect",
+			url:  fmt.Sprintf("%s/%s", srv.URL, token),
+			mock: func() {
+				repo.EXPECT().Get(gomock.Any(), token).Return(entity.StorageItem{OriginalURL: originalURL}, nil)
+			},
 			expectedCode: http.StatusTemporaryRedirect,
 		},
 		{
-			name:         "method_get_not_found",
-			url:          fmt.Sprintf("%s/asdf", srv.URL),
+			name: "not_found",
+			url:  fmt.Sprintf("%s/%s", srv.URL, "abc"),
+			mock: func() {
+				repo.EXPECT().Get(gomock.Any(), "abc").Return(entity.StorageItem{}, errNotFound)
+			},
 			expectedCode: http.StatusNotFound,
 		},
 	}
 
-	errRedirectBlocked := errors.New("HTTP redirect blocked")
 	redirPolicy := resty.RedirectPolicyFunc(func(_ *http.Request, _ []*http.Request) error {
 		return errRedirectBlocked
 	})
 
-	for _, tt := range cases {
+	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			tt.mock()
+
 			resp, err := resty.New().
 				SetRedirectPolicy(redirPolicy).
 				R().
@@ -82,42 +78,52 @@ func Test_ShortURLRoutes_getOriginalURL(t *testing.T) {
 }
 
 func Test_shortURLRoutes_createShortURL(t *testing.T) {
-	st, err := storage.New("")
-	require.NoError(t, err, "Couldn't create storage")
+	shorten, repo := shorten(t)
 
-	usecase := usecase.NewShortURLUseCase(repo.NewShortURLRepo(st))
 	handler := chi.NewRouter()
-	NewShortURLRoutes(handler, logger.New("error"), usecase, "")
+	NewShortURLRoutes(handler, logger.New("error"), shorten, "")
 	srv := httptest.NewServer(handler)
 	defer srv.Close()
 
-	cases := []struct {
+	tests := []struct {
 		name         string
 		bodyURL      string
 		contentType  string
+		mock         func()
 		expectedCode int
 		expectedBody string
 	}{
 		{
-			name:         "method_post_empty_body",
-			bodyURL:      "",
+			name:    "empty_body",
+			bodyURL: "",
+			mock: func() {
+				repo.EXPECT().Store(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+			},
 			expectedCode: http.StatusBadRequest,
 		},
 		{
-			name:         "method_post_bad_body_data",
-			bodyURL:      "example.com",
+			name:    "bad_body_data",
+			bodyURL: "example.com",
+			mock: func() {
+				repo.EXPECT().Store(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+			},
 			expectedCode: http.StatusBadRequest,
 		},
 		{
-			name:         "method_post_success",
-			bodyURL:      "https://example.com",
+			name:    "success",
+			bodyURL: "https://example.com",
+			mock: func() {
+				repo.EXPECT().Store(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+			},
 			expectedCode: http.StatusCreated,
 			expectedBody: fmt.Sprintf("%s/.........", srv.URL),
 		},
 	}
 
-	for _, tt := range cases {
+	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			tt.mock()
+
 			resp, err := resty.New().
 				R().
 				SetBody(tt.bodyURL).
