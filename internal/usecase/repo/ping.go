@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/lovelydaemon/url-shortener/internal/postgres"
 )
@@ -10,10 +11,13 @@ type PingRepo struct {
 	*postgres.Postgres
 }
 
-func NewPingRepo(pg *postgres.Postgres) *PingRepo {
+func NewPing(pg *postgres.Postgres) *PingRepo {
 	return &PingRepo{pg}
 }
 
 func (r *PingRepo) Ping(ctx context.Context) error {
-	return r.Pool.Ping(ctx)
+	if err := r.Pool.Ping(ctx); err != nil {
+		return fmt.Errorf("PingRepo - Ping - r.Pool.Ping: %w", err)
+	}
+	return nil
 }

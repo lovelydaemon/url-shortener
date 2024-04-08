@@ -9,7 +9,7 @@ type PingUseCase struct {
 	repo PingRepo
 }
 
-func NewPingUseCase(r PingRepo) *PingUseCase {
+func NewPing(r PingRepo) *PingUseCase {
 	return &PingUseCase{r}
 }
 

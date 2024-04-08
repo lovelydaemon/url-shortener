@@ -2,10 +2,15 @@ package storage
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 
 	"github.com/lovelydaemon/url-shortener/internal/entity"
+)
+
+var (
+	errRecordNotFound = errors.New("record not found")
 )
 
 type Storage struct {
@@ -60,27 +65,28 @@ func (s *Storage) Write(item entity.StorageItem) error {
 	}
 
 	if err := s.file.Truncate(0); err != nil {
-		return fmt.Errorf("ShortURLRepo - Store - r.file.Truncate: %w", err)
+		return fmt.Errorf("Storage - Write - s.file.Truncate: %w", err)
 	}
 
 	if _, err := s.file.Seek(0, 0); err != nil {
-		return fmt.Errorf("ShortURLRepo - Store - r.file.Seek: %w", err)
+		return fmt.Errorf("Storage - Write - s.file.Seek: %w", err)
 	}
 
 	if err := s.writer.Encode(s.store); err != nil {
-		return fmt.Errorf("ShortURLRepo - Store - r.writer.Encode: %w", err)
+		return fmt.Errorf("Storage - Write - s.writer.Encode: %w", err)
 	}
 
 	return nil
 }
 
-func (s *Storage) Get(token string) (entity.StorageItem, bool) {
+func (s *Storage) Get(token string) (entity.StorageItem, error) {
 	for _, v := range s.store {
 		if v.Token == token {
-			return v, true
+			return v, nil
 		}
 	}
-	return entity.StorageItem{}, false
+	err := errRecordNotFound
+	return entity.StorageItem{}, fmt.Errorf("Storage - Get - %w", err)
 }
 
 func (s *Storage) Len() int {

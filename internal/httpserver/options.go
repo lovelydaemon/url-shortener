@@ -1,13 +1,31 @@
 package httpserver
 
 import (
-	"net/http"
+	"time"
 )
 
-type Option func(*http.Server)
+type Option func(*Server)
 
 func Addr(addr string) Option {
-	return func(s *http.Server) {
-		s.Addr = addr
+	return func(s *Server) {
+		s.server.Addr = addr
+	}
+}
+
+func ReadTimeout(timeout time.Duration) Option {
+	return func(s *Server) {
+		s.server.ReadTimeout = timeout
+	}
+}
+
+func WriteTimeout(timeout time.Duration) Option {
+	return func(s *Server) {
+		s.server.WriteTimeout = timeout
+	}
+}
+
+func ShutdownTimeout(timeout time.Duration) Option {
+	return func(s *Server) {
+		s.shutdownTimeout = timeout
 	}
 }

@@ -6,15 +6,17 @@ import (
 	"github.com/lovelydaemon/url-shortener/internal/entity"
 )
 
+//go:generate mockgen -source=interfaces.go -destination=./mocks.go -package=usecase
+
 type (
-	ShortURL interface {
-		Get(token string) (entity.StorageItem, bool)
-		Store(originalUrl, token string) error
+	Shorten interface {
+		Get(ctx context.Context, token string) (entity.StorageItem, error)
+		Store(ctx context.Context, originalUrl, token string) error
 	}
 
-	ShortURLRepo interface {
-		Get(token string) (entity.StorageItem, bool)
-		Store(originalUrl, token string) error
+	ShortenRepo interface {
+		Get(ctx context.Context, token string) (entity.StorageItem, error)
+		Store(ctx context.Context, originalUrl, token string) error
 	}
 )
 
