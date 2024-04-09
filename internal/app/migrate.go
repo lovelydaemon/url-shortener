@@ -18,7 +18,7 @@ const (
 func ApplyMigrations(databaseURL string) {
 	if len(databaseURL) == 0 {
 		log.Print("Migrate: databaseURL is empty")
-    return
+		return
 	}
 
 	var (
