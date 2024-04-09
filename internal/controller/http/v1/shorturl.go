@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/lovelydaemon/url-shortener/internal/logger"
-	"github.com/lovelydaemon/url-shortener/internal/random"
 	urlc "github.com/lovelydaemon/url-shortener/internal/url"
 	"github.com/lovelydaemon/url-shortener/internal/usecase"
 )
@@ -61,9 +60,8 @@ func (r *shortURLRoutes) generateShortURL(w http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	token := random.NewRandomString(9)
-
-	if err := r.u.Store(ctx, originalURL, token); err != nil {
+	token, err := r.u.Store(ctx, originalURL)
+	if err != nil {
 		r.l.Error(err, "http - v1 - generateShortURL")
 		w.WriteHeader(http.StatusInternalServerError)
 		return

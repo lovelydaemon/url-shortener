@@ -11,7 +11,7 @@ import (
 type (
 	Shorten interface {
 		Get(ctx context.Context, token string) (entity.StorageItem, error)
-		Store(ctx context.Context, originalUrl, token string) error
+		Store(ctx context.Context, originalUrl string) (string, error)
 	}
 
 	ShortenRepo interface {

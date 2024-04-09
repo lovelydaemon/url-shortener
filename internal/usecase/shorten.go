@@ -5,7 +5,10 @@ import (
 	"fmt"
 
 	"github.com/lovelydaemon/url-shortener/internal/entity"
+	"github.com/lovelydaemon/url-shortener/internal/random"
 )
+
+const tokenLength = 9
 
 type ShortenUseCase struct {
 	repo ShortenRepo
@@ -25,9 +28,11 @@ func (uc *ShortenUseCase) Get(ctx context.Context, token string) (entity.Storage
 	return si, nil
 }
 
-func (uc *ShortenUseCase) Store(ctx context.Context, originalURL, token string) error {
+func (uc *ShortenUseCase) Store(ctx context.Context, originalURL string) (string, error) {
+	token := random.NewRandomString(tokenLength)
+
 	if err := uc.repo.Store(ctx, originalURL, token); err != nil {
-		return fmt.Errorf("ShortURLUseCase - Store - uc.repo.Store: %w", err)
+		return token, fmt.Errorf("ShortURLUseCase - Store - uc.repo.Store: %w", err)
 	}
-	return nil
+	return token, nil
 }
