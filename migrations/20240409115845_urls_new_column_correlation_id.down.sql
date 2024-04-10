@@ -1,0 +1,1 @@
+ALTER TABLE IF EXISTS urls DROP COLUMN correlation_id;

@@ -3,12 +3,10 @@ package v1
 import (
 	"io"
 	"net/http"
-	"net/url"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/lovelydaemon/url-shortener/internal/logger"
-	"github.com/lovelydaemon/url-shortener/internal/random"
-	urlc "github.com/lovelydaemon/url-shortener/internal/url"
+	"github.com/lovelydaemon/url-shortener/internal/url"
 	"github.com/lovelydaemon/url-shortener/internal/usecase"
 )
 
@@ -54,16 +52,14 @@ func (r *shortURLRoutes) generateShortURL(w http.ResponseWriter, req *http.Reque
 	}
 
 	originalURL := string(body)
-
-	if _, err := url.ParseRequestURI(originalURL); err != nil {
+	if err := url.Validate(originalURL); err != nil {
 		r.l.Info("Invalid request body", originalURL)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	token := random.NewRandomString(9)
-
-	if err := r.u.Store(ctx, originalURL, token); err != nil {
+	token, err := r.u.Store(ctx, originalURL)
+	if err != nil {
 		r.l.Error(err, "http - v1 - generateShortURL")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -76,7 +72,7 @@ func (r *shortURLRoutes) generateShortURL(w http.ResponseWriter, req *http.Reque
 		baseURL = req.Host
 	}
 
-	shortURL := urlc.CreateValidURL(baseURL, token)
+	shortURL := url.CreateValidURL(baseURL, token)
 
 	r.l.Info("Short url created, 201")
 	w.Header().Set("Content-type", "text/plain")
