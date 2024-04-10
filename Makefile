@@ -16,7 +16,7 @@ vet: ### run linter
 .PHONY: vet 
 
 mock: ### run mockgen
-	mockgen -source=./internal/usecase/interfaces.go -destination=./internal/usecase/mocks.go -package=usecase
+	mockgen -source=./internal/usecase/interfaces.go -destination=./internal/usecase/mocks_test.go -package=usecase_test
 .PHONY: mock 
 
 migrate-create: ### create new migration
@@ -30,6 +30,7 @@ migrate-up: ### migration up
 coverage: ### run html cover file
 	go test -race -timeout 30s -coverprofile=coverage.out ./internal/...
 	go tool cover -html=coverage.out
+	rm coverage.out
 .PHONY: coverage
 
 .DEFAULT_GOAL := build
