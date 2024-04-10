@@ -5,8 +5,10 @@ import (
 	"time"
 )
 
+var _defaultStringLength = 9
+
 // NewRandomString generates a random string
-func NewRandomString(size int) string {
+func NewRandomString() string {
 	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	chars := []rune(
@@ -15,7 +17,7 @@ func NewRandomString(size int) string {
 			"0123456789",
 	)
 
-	b := make([]rune, size)
+	b := make([]rune, _defaultStringLength)
 	for i := range b {
 		b[i] = chars[rnd.Intn(len(chars))]
 	}

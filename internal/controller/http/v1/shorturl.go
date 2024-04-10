@@ -3,11 +3,10 @@ package v1
 import (
 	"io"
 	"net/http"
-	"net/url"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/lovelydaemon/url-shortener/internal/logger"
-	urlc "github.com/lovelydaemon/url-shortener/internal/url"
+	"github.com/lovelydaemon/url-shortener/internal/url"
 	"github.com/lovelydaemon/url-shortener/internal/usecase"
 )
 
@@ -53,8 +52,7 @@ func (r *shortURLRoutes) generateShortURL(w http.ResponseWriter, req *http.Reque
 	}
 
 	originalURL := string(body)
-
-	if _, err := url.ParseRequestURI(originalURL); err != nil {
+	if err := url.Validate(originalURL); err != nil {
 		r.l.Info("Invalid request body", originalURL)
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -74,7 +72,7 @@ func (r *shortURLRoutes) generateShortURL(w http.ResponseWriter, req *http.Reque
 		baseURL = req.Host
 	}
 
-	shortURL := urlc.CreateValidURL(baseURL, token)
+	shortURL := url.CreateValidURL(baseURL, token)
 
 	r.l.Info("Short url created, 201")
 	w.Header().Set("Content-type", "text/plain")

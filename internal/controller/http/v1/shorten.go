@@ -2,12 +2,14 @@ package v1
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
-	"net/url"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/lovelydaemon/url-shortener/internal/entity"
 	"github.com/lovelydaemon/url-shortener/internal/logger"
-	urlc "github.com/lovelydaemon/url-shortener/internal/url"
+	"github.com/lovelydaemon/url-shortener/internal/url"
 	"github.com/lovelydaemon/url-shortener/internal/usecase"
 )
 
@@ -19,28 +21,25 @@ type shortenRoutes struct {
 func NewShortenRoutes(handler *chi.Mux, l logger.Interface, u usecase.Shorten) {
 	r := shortenRoutes{u, l}
 
-	handler.Post("/api/shorten", r.generateShortURL)
+	handler.Route("/api/shorten", func(h chi.Router) {
+		h.Use(middleware.AllowContentType("application/json"))
+		h.Post("/", r.generateShortURL)
+		h.Post("/batch", r.generateShortURLBatch)
+	})
 }
 
-type createShortURLRequest struct {
+type generateShortURLRequest struct {
 	URL string `json:"url"`
 }
 
-type createShortURLResponse struct {
+type generateShortURLResponse struct {
 	Result string `json:"result"`
 }
 
 func (r *shortenRoutes) generateShortURL(w http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
 
-	contentType := request.Header.Get("Content-Type")
-	if contentType != "application/json" {
-		r.l.Info("Bad content type", contentType)
-		w.WriteHeader(http.StatusUnsupportedMediaType)
-		return
-	}
-
-	var req createShortURLRequest
+	var req generateShortURLRequest
 	dec := json.NewDecoder(request.Body)
 	if err := dec.Decode(&req); err != nil {
 		r.l.Info("cannot decode request JSON body")
@@ -48,8 +47,8 @@ func (r *shortenRoutes) generateShortURL(w http.ResponseWriter, request *http.Re
 		return
 	}
 
-	if _, err := url.ParseRequestURI(req.URL); err != nil {
-		r.l.Info("Incorrect body url", req.URL)
+	if err := url.Validate(req.URL); err != nil {
+		r.l.Info("bad original url", req.URL)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -61,8 +60,8 @@ func (r *shortenRoutes) generateShortURL(w http.ResponseWriter, request *http.Re
 		return
 	}
 
-	resp := createShortURLResponse{
-		Result: urlc.CreateValidURL(request.Host, token),
+	resp := generateShortURLResponse{
+		Result: url.CreateValidURL(request.Host, token),
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -74,6 +73,52 @@ func (r *shortenRoutes) generateShortURL(w http.ResponseWriter, request *http.Re
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+}
 
-	r.l.Info("Short url created, 201")
+func (r *shortenRoutes) generateShortURLBatch(w http.ResponseWriter, request *http.Request) {
+	ctx := request.Context()
+
+	var req []entity.BatchItemIn
+	dec := json.NewDecoder(request.Body)
+	if err := dec.Decode(&req); err != nil {
+		r.l.Info("cannot decode request JSON body")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if len(req) == 0 {
+		r.l.Info("empty request")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	for _, v := range req {
+		if err := url.Validate(v.OriginalURL); err != nil {
+			r.l.Info(fmt.Sprintf("bad original url %s, id %s", v.OriginalURL, v.ID))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	}
+
+	resp, err := r.u.StoreBatch(ctx, req)
+	if err != nil {
+		r.l.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	for i, v := range resp {
+		v.ShortURL = url.CreateValidURL(request.Host, v.ShortURL)
+		resp[i] = v
+	}
+
+	w.Header().Set("Content-type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+
+	enc := json.NewEncoder(w)
+	if err := enc.Encode(resp); err != nil {
+		r.l.Info("error encoding response")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }

@@ -7,8 +7,8 @@ import (
 )
 
 func Validate(URL string) error {
-  _, err := url.ParseRequestURI(URL)
-  return err
+	_, err := url.ParseRequestURI(URL)
+	return err
 }
 
 func CreateValidURL(baseURL string, path string) string {

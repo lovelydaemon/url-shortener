@@ -7,33 +7,33 @@ import (
 )
 
 func Test_Validate(t *testing.T) {
-  tests := []struct{
-    name string
-    url string
-    expectedError bool
-  } {
-    {
-    	name: "success",
-      url:  "https://example.com",
-      expectedError: false,
-    },
-    {
-    	name: "error",
-      url:  "example.com",
-      expectedError: true,
-    },
-  }
+	tests := []struct {
+		name          string
+		url           string
+		expectedError bool
+	}{
+		{
+			name:          "success",
+			url:           "https://example.com",
+			expectedError: false,
+		},
+		{
+			name:          "error",
+			url:           "example.com",
+			expectedError: true,
+		},
+	}
 
-  for _, tt := range tests {
-    t.Run(tt.name, func(t *testing.T) {
-      err := Validate(tt.url)
-      if tt.expectedError {
-        assert.Error(t, err, "Expected error")
-      } else {
-        assert.NoError(t, err, "Expected no error")
-      }
-    })
-  }
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := Validate(tt.url)
+			if tt.expectedError {
+				assert.Error(t, err, "Expected error")
+			} else {
+				assert.NoError(t, err, "Expected no error")
+			}
+		})
+	}
 
 }
 
