@@ -7,6 +7,11 @@ import (
 	"strings"
 )
 
+var allowedGzipContentTypes = []string{
+  "application/x-gzip",
+  "application/gzip",
+}
+
 type compressReader struct {
 	r  io.ReadCloser
 	zr *gzip.Reader
@@ -41,8 +46,8 @@ func RequestDecompress(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		contentEncoding := r.Header.Get("Content-Encoding")
 		contentType := r.Header.Get("Content-Type")
-		sendsGzip := strings.Contains(contentEncoding, "gzip") && strings.Contains(contentType, "application/x-gzip")
-		if !sendsGzip {
+
+		if !sendsGzip(contentEncoding, contentType) {
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -58,4 +63,16 @@ func RequestDecompress(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+func sendsGzip(contentEncoding, contentType string) bool {
+  if !strings.Contains(contentEncoding, "gzip") {
+    return false
+  }
+  for _, v := range allowedGzipContentTypes {
+    if strings.Contains(contentType, v) {
+      return true 
+    }
+  }
+  return false 
 }
