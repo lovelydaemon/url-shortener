@@ -2,8 +2,12 @@ package repo
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
+	v1 "github.com/lovelydaemon/url-shortener/internal/controller/http/v1"
 	"github.com/lovelydaemon/url-shortener/internal/entity"
 	"github.com/lovelydaemon/url-shortener/internal/postgres"
 	"github.com/lovelydaemon/url-shortener/internal/random"
@@ -38,10 +42,23 @@ func (r *ShortenRepoPG) Store(ctx context.Context, originalURL string) (string, 
 
 	_, err := r.Pool.Exec(ctx,
 		"INSERT INTO urls (short_url, original_url) VALUES ($1, $2)", token, originalURL)
-	if err != nil {
-		return token, fmt.Errorf("ShortenRepo - Store - r.Pool.Exec: %w", err)
+	if err == nil {
+		return token, nil
 	}
-	return token, nil
+
+	var pgErr *pgconn.PgError
+	if !errors.As(err, &pgErr) || pgErr.Code != pgerrcode.UniqueViolation {
+		return "", fmt.Errorf("ShortenRepo - Store - r.Pool.Exec: %w", err)
+	}
+
+	err = r.Pool.QueryRow(ctx, `
+    SELECT short_url FROM urls WHERE original_url = $1
+  `, originalURL).Scan(&token)
+	if err != nil {
+		return "", fmt.Errorf("ShortenRepo - Store - r.Pool.QueryRow: %w", err)
+	}
+
+	return token, fmt.Errorf("ShortenRepo - Store - r.Pool.QueryRow: %w", v1.ErrConflict)
 }
 
 func (r *ShortenRepoPG) StoreBatch(ctx context.Context, batch []entity.BatchItemIn) ([]entity.BatchItemOut, error) {

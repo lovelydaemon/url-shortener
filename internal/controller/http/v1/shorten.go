@@ -2,6 +2,7 @@ package v1
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -54,7 +55,7 @@ func (r *shortenRoutes) generateShortURL(w http.ResponseWriter, request *http.Re
 	}
 
 	token, err := r.u.Store(ctx, req.URL)
-	if err != nil {
+	if err != nil && !errors.Is(err, ErrConflict) {
 		r.l.Error(err, "http - v1 - generateShortURL")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -65,7 +66,12 @@ func (r *shortenRoutes) generateShortURL(w http.ResponseWriter, request *http.Re
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
+
+	if errors.Is(err, ErrConflict) {
+		w.WriteHeader(http.StatusConflict)
+	} else {
+		w.WriteHeader(http.StatusCreated)
+	}
 
 	enc := json.NewEncoder(w)
 	if err := enc.Encode(resp); err != nil {
