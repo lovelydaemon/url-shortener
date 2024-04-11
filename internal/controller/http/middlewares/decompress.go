@@ -8,8 +8,8 @@ import (
 )
 
 var allowedGzipContentTypes = []string{
-  "application/x-gzip",
-  "application/gzip",
+	"application/x-gzip",
+	"application/gzip",
 }
 
 type compressReader struct {
@@ -66,13 +66,13 @@ func RequestDecompress(next http.Handler) http.Handler {
 }
 
 func sendsGzip(contentEncoding, contentType string) bool {
-  if !strings.Contains(contentEncoding, "gzip") {
-    return false
-  }
-  for _, v := range allowedGzipContentTypes {
-    if strings.Contains(contentType, v) {
-      return true 
-    }
-  }
-  return false 
+	if !strings.Contains(contentEncoding, "gzip") {
+		return false
+	}
+	for _, v := range allowedGzipContentTypes {
+		if strings.Contains(contentType, v) {
+			return true
+		}
+	}
+	return false
 }

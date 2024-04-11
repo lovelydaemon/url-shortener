@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"errors"
 	"io"
 	"net/http"
 
@@ -59,7 +60,7 @@ func (r *shortURLRoutes) generateShortURL(w http.ResponseWriter, req *http.Reque
 	}
 
 	token, err := r.u.Store(ctx, originalURL)
-	if err != nil {
+	if err != nil && !errors.Is(err, ErrConflict) {
 		r.l.Error(err, "http - v1 - generateShortURL")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -74,8 +75,13 @@ func (r *shortURLRoutes) generateShortURL(w http.ResponseWriter, req *http.Reque
 
 	shortURL := url.CreateValidURL(baseURL, token)
 
-	r.l.Info("Short url created, 201")
 	w.Header().Set("Content-type", "text/plain")
-	w.WriteHeader(http.StatusCreated)
+
+	if errors.Is(err, ErrConflict) {
+		w.WriteHeader(http.StatusConflict)
+	} else {
+		w.WriteHeader(http.StatusCreated)
+	}
+
 	w.Write([]byte(shortURL))
 }

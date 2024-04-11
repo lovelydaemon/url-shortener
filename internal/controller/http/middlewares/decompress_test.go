@@ -48,7 +48,7 @@ func Test_RequestDecompress(t *testing.T) {
 		name            string
 		contentType     string
 		contentEncoding string
-    body []byte
+		body            []byte
 		expectedCode    int
 		expectedBody    string
 	}{
@@ -56,22 +56,22 @@ func Test_RequestDecompress(t *testing.T) {
 			name:            "success decompress",
 			contentType:     "application/x-gzip",
 			contentEncoding: "gzip",
-      body: body,
+			body:            body,
 			expectedCode:    http.StatusOK,
 			expectedBody:    originalString,
 		},
 		{
-			name:            "request without compressing",
-			contentType:     "application/json",
-      body: []byte(originalString),
-			expectedCode:    http.StatusOK,
-			expectedBody:    originalString,
+			name:         "request without compressing",
+			contentType:  "application/json",
+			body:         []byte(originalString),
+			expectedCode: http.StatusOK,
+			expectedBody: originalString,
 		},
 		{
 			name:            "corrupted gzip data",
 			contentType:     "application/x-gzip",
 			contentEncoding: "gzip",
-      body: []byte(originalString),
+			body:            []byte(originalString),
 			expectedCode:    http.StatusInternalServerError,
 		},
 	}
@@ -82,9 +82,9 @@ func Test_RequestDecompress(t *testing.T) {
 			client.SetBody(tt.body)
 			client.SetHeader("Content-Type", tt.contentType)
 
-      if tt.contentEncoding != "" {
-        client.SetHeader("Content-Encoding", tt.contentEncoding)
-      }
+			if tt.contentEncoding != "" {
+				client.SetHeader("Content-Encoding", tt.contentEncoding)
+			}
 
 			resp, err := client.Post(srv.URL)
 			assert.NoError(t, err, "Error making HTTP request")
