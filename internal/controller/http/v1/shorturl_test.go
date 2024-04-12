@@ -57,9 +57,17 @@ func Test_shortURLRoutes_getOriginalURL(t *testing.T) {
 			name:  "not found",
 			token: "abcd",
 			mock: func() {
-				repo.EXPECT().Get(gomock.Any(), gomock.Any()).Return(entity.StorageItem{}, ErrInternalServerError)
+				repo.EXPECT().Get(gomock.Any(), gomock.Any()).Return(entity.StorageItem{}, ErrNotFound)
 			},
 			expectedCode: http.StatusNotFound,
+		},
+		{
+			name:  "internal server error on get",
+			token: "abcd",
+			mock: func() {
+				repo.EXPECT().Get(gomock.Any(), gomock.Any()).Return(entity.StorageItem{}, ErrInternalServerError)
+			},
+			expectedCode: http.StatusInternalServerError,
 		},
 	}
 

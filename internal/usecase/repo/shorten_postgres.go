@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	v1 "github.com/lovelydaemon/url-shortener/internal/controller/http/v1"
 	"github.com/lovelydaemon/url-shortener/internal/entity"
@@ -31,6 +32,10 @@ func (r *ShortenRepoPG) Get(ctx context.Context, token string) (entity.StorageIt
 		Scan(&si.ID, &si.Token, &si.OriginalURL)
 
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return si, fmt.Errorf("ShortenRepo - Get - r.Pool.QueryRow.Scan: %w", v1.ErrNotFound)
+		}
+
 		return si, fmt.Errorf("ShortenRepo - Get - r.Pool.QueryRow.Scan: %w", err)
 	}
 
