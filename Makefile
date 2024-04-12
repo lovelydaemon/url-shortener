@@ -16,7 +16,7 @@ vet: ### run linter
 .PHONY: vet 
 
 mock: ### run mockgen
-	mockgen -source=./internal/usecase/interfaces.go -destination=./internal/usecase/mocks_test.go -package=usecase_test
+	mockgen -source=./internal/usecase/interfaces.go -destination=./internal/usecase/mocks.go -package=usecase
 .PHONY: mock 
 
 migrate-create: ### create new migration

@@ -6,7 +6,7 @@ import (
 	"github.com/lovelydaemon/url-shortener/internal/entity"
 )
 
-//go:generate mockgen -source=interfaces.go -destination=./mocks_test.go -package=usecase_test
+//go:generate mockgen -source=interfaces.go -destination=./mocks.go -package=usecase
 
 type (
 	Shorten interface {
