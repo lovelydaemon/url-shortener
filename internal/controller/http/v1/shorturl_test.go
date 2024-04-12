@@ -16,7 +16,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func shortURL(t *testing.T, shortAddr string) (*httptest.Server, *usecase.ShortenUseCase, *usecase.MockShortenRepo) {
+func shortURL(t *testing.T, shortAddr string) (*httptest.Server, *usecase.MockShortenRepo) {
 	t.Helper()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -28,13 +28,13 @@ func shortURL(t *testing.T, shortAddr string) (*httptest.Server, *usecase.Shorte
 	NewShortURLRoutes(handler, logger.New("error"), uc, shortAddr)
 	srv := httptest.NewServer(handler)
 
-	return srv, uc, repo
+	return srv, repo
 }
 
 func Test_shortURLRoutes_getOriginalURL(t *testing.T) {
 	shortAddr := ""
 	originalURL := "http://example.com"
-	srv, _, repo := shortURL(t, shortAddr)
+	srv, repo := shortURL(t, shortAddr)
 	defer srv.Close()
 
 	tests := []struct {
@@ -87,7 +87,7 @@ func Test_shortURLRoutes_getOriginalURL(t *testing.T) {
 }
 
 func Test_shortURLRoutes_generateShortURL(t *testing.T) {
-	srv, _, repo := shortURL(t, "")
+	srv, repo := shortURL(t, "")
 	defer srv.Close()
 
 	tests := []struct {
@@ -163,7 +163,7 @@ func Test_shortURLRoutes_generateShortURL(t *testing.T) {
 
 func Test_shortURLRoutes_generateShortURL_with_shortAddr(t *testing.T) {
 	shortAddr := "http://example.com:1234"
-	srv, _, repo := shortURL(t, shortAddr)
+	srv, repo := shortURL(t, shortAddr)
 	defer srv.Close()
 
 	tests := []struct {

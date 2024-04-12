@@ -14,7 +14,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func ping(t *testing.T) (*httptest.Server, *usecase.PingUseCase, *usecase.MockPingRepo) {
+func ping(t *testing.T) (*httptest.Server, *usecase.MockPingRepo) {
 	t.Helper()
 
 	ctrl := gomock.NewController(t)
@@ -27,11 +27,11 @@ func ping(t *testing.T) (*httptest.Server, *usecase.PingUseCase, *usecase.MockPi
 
 	srv := httptest.NewServer(handler)
 
-	return srv, uc, repo
+	return srv, repo
 }
 
 func Test_pingRoutes_ping(t *testing.T) {
-	srv, _, repo := ping(t)
+	srv, repo := ping(t)
 	defer srv.Close()
 
 	tests := []struct {
