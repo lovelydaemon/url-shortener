@@ -12,6 +12,7 @@ type (
 		Log
 		Storage
 		PG
+		JWT
 
 		BaseURL string `env:"BASE_URL"`
 	}
@@ -32,6 +33,10 @@ type (
 		PoolMax int    `env:"PG_POOL_MAX"`
 		URL     string `env:"DATABASE_DSN"`
 	}
+
+	JWT struct {
+		Key string `env:"JWT_KEY"`
+	}
 )
 
 // New returns app config
@@ -51,5 +56,6 @@ func parseFlags(cfg *Config) {
 	flag.StringVar(&cfg.BaseURL, "b", "", "base url for short url output")
 	flag.StringVar(&cfg.Storage.Path, "f", "./tmp/short-url-db.json", "path to the file where the data will be saved")
 	flag.StringVar(&cfg.PG.URL, "d", "", "database url connection")
+	flag.StringVar(&cfg.JWT.Key, "jwt", "secret", "jwt secret key")
 	flag.Parse()
 }

@@ -44,9 +44,10 @@ func (r *ShortenRepoPG) Get(ctx context.Context, token string) (entity.StorageIt
 
 func (r *ShortenRepoPG) Store(ctx context.Context, originalURL string) (string, error) {
 	token := random.NewRandomString()
+	userID := ctx.Value("userID")
 
 	_, err := r.Pool.Exec(ctx,
-		"INSERT INTO urls (short_url, original_url) VALUES ($1, $2)", token, originalURL)
+		"INSERT INTO urls (short_url, original_url, user_id) VALUES ($1, $2, $3)", token, originalURL, userID)
 	if err == nil {
 		return token, nil
 	}
@@ -67,6 +68,7 @@ func (r *ShortenRepoPG) Store(ctx context.Context, originalURL string) (string, 
 }
 
 func (r *ShortenRepoPG) StoreBatch(ctx context.Context, batch []entity.BatchItemIn) ([]entity.BatchItemOut, error) {
+	userID := ctx.Value("userID")
 	tx, err := r.Pool.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("ShortenRepo - StoreBatch - r.Pool.Begin: %w", err)
@@ -79,9 +81,9 @@ func (r *ShortenRepoPG) StoreBatch(ctx context.Context, batch []entity.BatchItem
 		correlationIds = append(correlationIds, v.ID)
 
 		_, err = tx.Exec(ctx, `
-      INSERT INTO urls (short_url, original_url, correlation_id)
-      VALUES ($1, $2, $3)
-    `, token, v.OriginalURL, v.ID)
+      INSERT INTO urls (short_url, original_url, correlation_id, user_id)
+      VALUES ($1, $2, $3, $4)
+    `, token, v.OriginalURL, v.ID, userID)
 
 		if err != nil {
 			return nil, fmt.Errorf("ShortenRepo - StoreBatch - tx.Exec: %w", err)

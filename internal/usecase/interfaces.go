@@ -31,3 +31,13 @@ type (
 		Ping(ctx context.Context) error
 	}
 )
+
+type (
+	User interface {
+		GetUrls(ctx context.Context) ([]entity.UserURL, error)
+	}
+
+	UserRepo interface {
+		GetUrls(ctx context.Context) ([]entity.UserURL, error)
+	}
+)

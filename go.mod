@@ -4,6 +4,7 @@ go 1.22.1
 
 require (
 	github.com/go-chi/chi/v5 v5.0.12
+	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/golang-migrate/migrate/v4 v4.17.0
 	github.com/jackc/pgerrcode v0.0.0-20220416144525-469b46aa5efa
 	github.com/jackc/pgx/v5 v5.5.5
@@ -31,6 +32,7 @@ require (
 	github.com/BurntSushi/toml v1.3.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-resty/resty/v2 v2.12.0
+	github.com/google/uuid v1.6.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
