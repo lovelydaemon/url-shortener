@@ -17,7 +17,7 @@ type shortURLRoutes struct {
 	shortAddr string
 }
 
-func NewShortURLRoutes(handler *chi.Mux, l logger.Interface, u usecase.Shorten, shortAddr string) {
+func NewShortURLRoutes(handler chi.Router, l logger.Interface, u usecase.Shorten, shortAddr string) {
 	r := &shortURLRoutes{u, l, shortAddr}
 
 	handler.Get("/{token}", r.getOriginalURL)

@@ -16,7 +16,29 @@ type Claims struct {
 
 const TOKEN_EXP = time.Minute * 30
 
-func Authenticate(key string) func(next http.Handler) http.Handler {
+func Authorization(key string) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			cookie, err := r.Cookie("jwt")
+			if err != nil {
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			userID, err := getUserID(cookie.Value, key)
+			if err != nil {
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			ctx := context.WithValue(r.Context(), "userID", userID)
+			r = r.WithContext(ctx)
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+func Authentication(key string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			cookie, err := r.Cookie("jwt")

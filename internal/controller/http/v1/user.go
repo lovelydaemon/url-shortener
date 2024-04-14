@@ -17,15 +17,14 @@ type userRoutes struct {
 	l logger.Interface
 }
 
-func NewUserRoutes(handler *chi.Mux, l logger.Interface, u usecase.User) {
+func NewUserRoutes(handler chi.Router, l logger.Interface, u usecase.User) {
 	r := userRoutes{u, l}
 
 	handler.Get("/api/user/urls", r.getUserUrls)
 }
 
 func (r *userRoutes) getUserUrls(w http.ResponseWriter, request *http.Request) {
-	userID := request.Context().Value("userID").(uuid.UUID)
-	if userID.String() == "" {
+	if _, ok := request.Context().Value("userID").(uuid.UUID); !ok {
 		r.l.Info("Empty user id")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
