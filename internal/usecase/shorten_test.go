@@ -1,23 +1,22 @@
-package usecase_test
+package usecase
 
 import (
 	"context"
 	"testing"
 
 	"github.com/lovelydaemon/url-shortener/internal/entity"
-	"github.com/lovelydaemon/url-shortener/internal/usecase"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
 
-func shorten(t *testing.T) (*usecase.ShortenUseCase, *MockShortenRepo) {
+func shorten(t *testing.T) (*ShortenUseCase, *MockShortenRepo) {
 	t.Helper()
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	repo := NewMockShortenRepo(ctrl)
-	shorten := usecase.NewShorten(repo)
+	shorten := NewShorten(repo)
 
 	return shorten, repo
 }

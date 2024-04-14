@@ -17,7 +17,7 @@ type shortURLRoutes struct {
 	shortAddr string
 }
 
-func NewShortURLRoutes(handler *chi.Mux, l logger.Interface, u usecase.Shorten, shortAddr string) {
+func NewShortURLRoutes(handler chi.Router, l logger.Interface, u usecase.Shorten, shortAddr string) {
 	r := &shortURLRoutes{u, l, shortAddr}
 
 	handler.Get("/{token}", r.getOriginalURL)
@@ -31,8 +31,14 @@ func (r *shortURLRoutes) getOriginalURL(w http.ResponseWriter, req *http.Request
 
 	item, err := r.u.Get(ctx, token)
 	if err != nil {
-		r.l.Info("Error get url by token", err.Error())
-		w.WriteHeader(http.StatusNotFound)
+		if errors.Is(err, ErrNotFound) {
+			r.l.Info("Record not found", err.Error())
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		r.l.Info("Error get original url", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 

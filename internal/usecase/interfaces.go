@@ -6,7 +6,7 @@ import (
 	"github.com/lovelydaemon/url-shortener/internal/entity"
 )
 
-//go:generate mockgen -source=interfaces.go -destination=./mocks_test.go -package=usecase_test
+//go:generate mockgen -source=interfaces.go -destination=./mocks.go -package=usecase
 
 type (
 	Shorten interface {
@@ -29,5 +29,15 @@ type (
 
 	PingRepo interface {
 		Ping(ctx context.Context) error
+	}
+)
+
+type (
+	User interface {
+		GetUrls(ctx context.Context) ([]entity.UserURL, error)
+	}
+
+	UserRepo interface {
+		GetUrls(ctx context.Context) ([]entity.UserURL, error)
 	}
 )

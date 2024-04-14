@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_RequestDecompress(t *testing.T) {
+func TestRequestDecompress(t *testing.T) {
 	handler := chi.NewRouter()
 	handler.Use(RequestDecompress)
 

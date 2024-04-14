@@ -1,25 +1,24 @@
-package usecase_test
+package usecase
 
 import (
 	"context"
 	"errors"
 	"testing"
 
-	"github.com/lovelydaemon/url-shortener/internal/usecase"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
 
 var errInternalServerErr = errors.New("internal server error")
 
-func ping(t *testing.T) (*usecase.PingUseCase, *MockPingRepo) {
+func ping(t *testing.T) (*PingUseCase, *MockPingRepo) {
 	t.Helper()
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	repo := NewMockPingRepo(ctrl)
-	ping := usecase.NewPing(repo)
+	ping := NewPing(repo)
 
 	return ping, repo
 }

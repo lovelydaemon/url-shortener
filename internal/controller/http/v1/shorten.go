@@ -19,7 +19,7 @@ type shortenRoutes struct {
 	l logger.Interface
 }
 
-func NewShortenRoutes(handler *chi.Mux, l logger.Interface, u usecase.Shorten) {
+func NewShortenRoutes(handler chi.Router, l logger.Interface, u usecase.Shorten) {
 	r := shortenRoutes{u, l}
 
 	handler.Route("/api/shorten", func(h chi.Router) {

@@ -47,15 +47,14 @@ func Run(cfg *config.Config) {
 	}
 
 	// Use case
-	shortenUC := usecase.NewShorten(shortenRepo)
-	pingUC := usecase.NewPing(repo.NewPing(pg))
+	shorten := usecase.NewShorten(shortenRepo)
+	ping := usecase.NewPing(repo.NewPing(pg))
+	user := usecase.NewUser(repo.NewUser(pg))
+	usecases := usecase.New(shorten, ping, user)
 
 	// HTTP Server
 	handler := chi.NewRouter()
-	handler = v1.NewRouter(handler, l)
-	v1.NewShortURLRoutes(handler, l, shortenUC, cfg.BaseURL)
-	v1.NewShortenRoutes(handler, l, shortenUC)
-	v1.NewPingRoutes(handler, l, pingUC)
+	handler = v1.NewRouter(handler, l, cfg, usecases)
 
 	httpServer := httpserver.New(handler, httpserver.Addr(cfg.HTTP.Addr))
 	l.Info("Server running on " + httpServer.Addr())
