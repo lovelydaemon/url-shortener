@@ -20,16 +20,16 @@ type shortURLRoutes struct {
 func NewShortURLRoutes(handler chi.Router, l logger.Interface, u usecase.Shorten, shortAddr string) {
 	r := &shortURLRoutes{u, l, shortAddr}
 
-	handler.Get("/{token}", r.getOriginalURL)
+	handler.Get("/{shortURL}", r.getOriginalURL)
 	handler.Post("/", r.generateShortURL)
 }
 
 func (r *shortURLRoutes) getOriginalURL(w http.ResponseWriter, req *http.Request) {
 	ctx := req.Context()
 
-	token := chi.URLParam(req, "token")
+	shortURL := chi.URLParam(req, "shortURL")
 
-	item, err := r.u.Get(ctx, token)
+	item, err := r.u.Get(ctx, shortURL)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			r.l.Info("Record not found", err.Error())
@@ -39,6 +39,12 @@ func (r *shortURLRoutes) getOriginalURL(w http.ResponseWriter, req *http.Request
 
 		r.l.Info("Error get original url", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if item.DeletedFlag {
+		r.l.Info("URL was deleted")
+		w.WriteHeader(http.StatusGone)
 		return
 	}
 
@@ -65,7 +71,7 @@ func (r *shortURLRoutes) generateShortURL(w http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	token, err := r.u.Store(ctx, originalURL)
+	shortURL, err := r.u.Store(ctx, originalURL)
 	if err != nil && !errors.Is(err, ErrConflict) {
 		r.l.Error(err, "http - v1 - generateShortURL")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -79,7 +85,7 @@ func (r *shortURLRoutes) generateShortURL(w http.ResponseWriter, req *http.Reque
 		baseURL = req.Host
 	}
 
-	shortURL := url.CreateValidURL(baseURL, token)
+	responseURL := url.CreateValidURL(baseURL, shortURL)
 
 	w.Header().Set("Content-type", "text/plain")
 
@@ -89,5 +95,5 @@ func (r *shortURLRoutes) generateShortURL(w http.ResponseWriter, req *http.Reque
 		w.WriteHeader(http.StatusCreated)
 	}
 
-	w.Write([]byte(shortURL))
+	w.Write([]byte(responseURL))
 }

@@ -41,18 +41,18 @@ func (m *MockShorten) EXPECT() *MockShortenMockRecorder {
 }
 
 // Get mocks base method.
-func (m *MockShorten) Get(ctx context.Context, token string) (entity.StorageItem, error) {
+func (m *MockShorten) Get(ctx context.Context, shortURL string) (entity.Storage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", ctx, token)
-	ret0, _ := ret[0].(entity.StorageItem)
+	ret := m.ctrl.Call(m, "Get", ctx, shortURL)
+	ret0, _ := ret[0].(entity.Storage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockShortenMockRecorder) Get(ctx, token any) *gomock.Call {
+func (mr *MockShortenMockRecorder) Get(ctx, shortURL any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockShorten)(nil).Get), ctx, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockShorten)(nil).Get), ctx, shortURL)
 }
 
 // Store mocks base method.
@@ -109,18 +109,18 @@ func (m *MockShortenRepo) EXPECT() *MockShortenRepoMockRecorder {
 }
 
 // Get mocks base method.
-func (m *MockShortenRepo) Get(ctx context.Context, token string) (entity.StorageItem, error) {
+func (m *MockShortenRepo) Get(ctx context.Context, shortURL string) (entity.Storage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", ctx, token)
-	ret0, _ := ret[0].(entity.StorageItem)
+	ret := m.ctrl.Call(m, "Get", ctx, shortURL)
+	ret0, _ := ret[0].(entity.Storage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockShortenRepoMockRecorder) Get(ctx, token any) *gomock.Call {
+func (mr *MockShortenRepoMockRecorder) Get(ctx, shortURL any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockShortenRepo)(nil).Get), ctx, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockShortenRepo)(nil).Get), ctx, shortURL)
 }
 
 // Store mocks base method.
@@ -225,4 +225,111 @@ func (m *MockPingRepo) Ping(ctx context.Context) error {
 func (mr *MockPingRepoMockRecorder) Ping(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Ping", reflect.TypeOf((*MockPingRepo)(nil).Ping), ctx)
+}
+
+// MockUser is a mock of User interface.
+type MockUser struct {
+	ctrl     *gomock.Controller
+	recorder *MockUserMockRecorder
+}
+
+// MockUserMockRecorder is the mock recorder for MockUser.
+type MockUserMockRecorder struct {
+	mock *MockUser
+}
+
+// NewMockUser creates a new mock instance.
+func NewMockUser(ctrl *gomock.Controller) *MockUser {
+	mock := &MockUser{ctrl: ctrl}
+	mock.recorder = &MockUserMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockUser) EXPECT() *MockUserMockRecorder {
+	return m.recorder
+}
+
+// DeleteURLs mocks base method.
+func (m *MockUser) DeleteURLs(ctx context.Context, urls []string) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "DeleteURLs", ctx, urls)
+}
+
+// DeleteURLs indicates an expected call of DeleteURLs.
+func (mr *MockUserMockRecorder) DeleteURLs(ctx, urls any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteURLs", reflect.TypeOf((*MockUser)(nil).DeleteURLs), ctx, urls)
+}
+
+// GetURLs mocks base method.
+func (m *MockUser) GetURLs(ctx context.Context) ([]entity.UserURL, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetURLs", ctx)
+	ret0, _ := ret[0].([]entity.UserURL)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetURLs indicates an expected call of GetURLs.
+func (mr *MockUserMockRecorder) GetURLs(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetURLs", reflect.TypeOf((*MockUser)(nil).GetURLs), ctx)
+}
+
+// MockUserRepo is a mock of UserRepo interface.
+type MockUserRepo struct {
+	ctrl     *gomock.Controller
+	recorder *MockUserRepoMockRecorder
+}
+
+// MockUserRepoMockRecorder is the mock recorder for MockUserRepo.
+type MockUserRepoMockRecorder struct {
+	mock *MockUserRepo
+}
+
+// NewMockUserRepo creates a new mock instance.
+func NewMockUserRepo(ctrl *gomock.Controller) *MockUserRepo {
+	mock := &MockUserRepo{ctrl: ctrl}
+	mock.recorder = &MockUserRepoMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockUserRepo) EXPECT() *MockUserRepoMockRecorder {
+	return m.recorder
+}
+
+// DeleteURLs mocks base method.
+func (m *MockUserRepo) DeleteURLs(ctx context.Context, urls ...entity.StorageWithUser) error {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx}
+	for _, a := range urls {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteURLs", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteURLs indicates an expected call of DeleteURLs.
+func (mr *MockUserRepoMockRecorder) DeleteURLs(ctx any, urls ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx}, urls...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteURLs", reflect.TypeOf((*MockUserRepo)(nil).DeleteURLs), varargs...)
+}
+
+// GetURLs mocks base method.
+func (m *MockUserRepo) GetURLs(ctx context.Context) ([]entity.UserURL, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetURLs", ctx)
+	ret0, _ := ret[0].([]entity.UserURL)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetURLs indicates an expected call of GetURLs.
+func (mr *MockUserRepoMockRecorder) GetURLs(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetURLs", reflect.TypeOf((*MockUserRepo)(nil).GetURLs), ctx)
 }

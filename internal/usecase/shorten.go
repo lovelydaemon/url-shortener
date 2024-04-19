@@ -17,8 +17,8 @@ func NewShorten(r ShortenRepo) *ShortenUseCase {
 	}
 }
 
-func (uc *ShortenUseCase) Get(ctx context.Context, token string) (entity.StorageItem, error) {
-	si, err := uc.repo.Get(ctx, token)
+func (uc *ShortenUseCase) Get(ctx context.Context, shortURL string) (entity.Storage, error) {
+	si, err := uc.repo.Get(ctx, shortURL)
 	if err != nil {
 		return si, fmt.Errorf("ShortenUseCase - Get - uc.repo.Get: %w", err)
 	}
@@ -26,11 +26,11 @@ func (uc *ShortenUseCase) Get(ctx context.Context, token string) (entity.Storage
 }
 
 func (uc *ShortenUseCase) Store(ctx context.Context, originalURL string) (string, error) {
-	token, err := uc.repo.Store(ctx, originalURL)
+	shortURL, err := uc.repo.Store(ctx, originalURL)
 	if err != nil {
-		return token, fmt.Errorf("ShortenUseCase - Store - uc.repo.Store: %w", err)
+		return shortURL, fmt.Errorf("ShortenUseCase - Store - uc.repo.Store: %w", err)
 	}
-	return token, nil
+	return shortURL, nil
 }
 
 func (uc *ShortenUseCase) StoreBatch(ctx context.Context, batch []entity.BatchItemIn) ([]entity.BatchItemOut, error) {

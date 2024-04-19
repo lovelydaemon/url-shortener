@@ -33,17 +33,17 @@ func TestGet(t *testing.T) {
 		{
 			name: "success",
 			mock: func() {
-				repo.EXPECT().Get(context.Background(), "").Return(entity.StorageItem{}, nil)
+				repo.EXPECT().Get(context.Background(), "").Return(entity.Storage{}, nil)
 			},
-			res: entity.StorageItem{},
+			res: entity.Storage{},
 			err: nil,
 		},
 		{
 			name: "empty result with error",
 			mock: func() {
-				repo.EXPECT().Get(context.Background(), "").Return(entity.StorageItem{}, errInternalServerErr)
+				repo.EXPECT().Get(context.Background(), "").Return(entity.Storage{}, errInternalServerErr)
 			},
-			res: entity.StorageItem{},
+			res: entity.Storage{},
 			err: errInternalServerErr,
 		},
 	}
@@ -72,9 +72,9 @@ func TestStore(t *testing.T) {
 		{
 			name: "success",
 			mock: func() {
-				repo.EXPECT().Store(context.Background(), "").Return("token", nil)
+				repo.EXPECT().Store(context.Background(), "").Return("shortURL", nil)
 			},
-			res: "token",
+			res: "shortURL",
 			err: nil,
 		},
 		{

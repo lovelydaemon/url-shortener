@@ -10,13 +10,13 @@ import (
 
 type (
 	Shorten interface {
-		Get(ctx context.Context, token string) (entity.StorageItem, error)
+		Get(ctx context.Context, shortURL string) (entity.Storage, error)
 		Store(ctx context.Context, originalUrl string) (string, error)
 		StoreBatch(ctx context.Context, batch []entity.BatchItemIn) ([]entity.BatchItemOut, error)
 	}
 
 	ShortenRepo interface {
-		Get(ctx context.Context, token string) (entity.StorageItem, error)
+		Get(ctx context.Context, shortURL string) (entity.Storage, error)
 		Store(ctx context.Context, originalUrl string) (string, error)
 		StoreBatch(ctx context.Context, batch []entity.BatchItemIn) ([]entity.BatchItemOut, error)
 	}
@@ -34,10 +34,12 @@ type (
 
 type (
 	User interface {
-		GetUrls(ctx context.Context) ([]entity.UserURL, error)
+		GetURLs(ctx context.Context) ([]entity.UserURL, error)
+		DeleteURLs(ctx context.Context, urls []string)
 	}
 
 	UserRepo interface {
-		GetUrls(ctx context.Context) ([]entity.UserURL, error)
+		GetURLs(ctx context.Context) ([]entity.UserURL, error)
+		DeleteURLs(ctx context.Context, urls ...entity.StorageWithUser) error
 	}
 )

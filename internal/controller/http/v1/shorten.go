@@ -54,7 +54,7 @@ func (r *shortenRoutes) generateShortURL(w http.ResponseWriter, request *http.Re
 		return
 	}
 
-	token, err := r.u.Store(ctx, req.URL)
+	shortURL, err := r.u.Store(ctx, req.URL)
 	if err != nil && !errors.Is(err, ErrConflict) {
 		r.l.Error(err, "http - v1 - generateShortURL")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -62,7 +62,7 @@ func (r *shortenRoutes) generateShortURL(w http.ResponseWriter, request *http.Re
 	}
 
 	resp := generateShortURLResponse{
-		Result: url.CreateValidURL(request.Host, token),
+		Result: url.CreateValidURL(request.Host, shortURL),
 	}
 
 	w.Header().Set("Content-Type", "application/json")

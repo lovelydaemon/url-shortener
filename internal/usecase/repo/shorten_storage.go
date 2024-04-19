@@ -19,8 +19,8 @@ func NewShortenST(storage *storage.Storage) *ShortenRepoST {
 	}
 }
 
-func (r *ShortenRepoST) Get(ctx context.Context, token string) (entity.StorageItem, error) {
-	si, err := r.storage.Get(token)
+func (r *ShortenRepoST) Get(ctx context.Context, shortURL string) (entity.Storage, error) {
+	si, err := r.storage.Get(shortURL)
 	if err != nil {
 		return si, fmt.Errorf("ShortenRepo - Get - r.storage.Get: %w", err)
 	}
@@ -28,18 +28,18 @@ func (r *ShortenRepoST) Get(ctx context.Context, token string) (entity.StorageIt
 }
 
 func (r *ShortenRepoST) Store(ctx context.Context, originalURL string) (string, error) {
-	token := random.NewRandomString()
+	shortURL := random.NewRandomString()
 
-	storageItem := entity.StorageItem{
+	storageItem := entity.Storage{
 		ID:          r.storage.Len() + 1,
-		Token:       token,
+		ShortURL:    shortURL,
 		OriginalURL: originalURL,
 	}
 
 	if err := r.storage.Write(storageItem); err != nil {
-		return token, fmt.Errorf("ShortenRepo - Store - r.storage.Write: %w", err)
+		return shortURL, fmt.Errorf("ShortenRepo - Store - r.storage.Write: %w", err)
 	}
-	return token, nil
+	return shortURL, nil
 }
 
 func (r *ShortenRepoST) StoreBatch(ctx context.Context, batch []entity.BatchItemIn) ([]entity.BatchItemOut, error) {

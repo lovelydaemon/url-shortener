@@ -39,33 +39,41 @@ func Test_shortURLRoutes_getOriginalURL(t *testing.T) {
 
 	tests := []struct {
 		name             string
-		token            string
+		shortURL         string
 		mock             func()
 		expectedCode     int
 		expectedLocation string
 	}{
 		{
-			name:  "success",
-			token: "abc",
+			name:     "success",
+			shortURL: "abc",
 			mock: func() {
-				repo.EXPECT().Get(gomock.Any(), gomock.Any()).Return(entity.StorageItem{OriginalURL: originalURL}, nil)
+				repo.EXPECT().Get(gomock.Any(), gomock.Any()).Return(entity.Storage{OriginalURL: originalURL}, nil)
 			},
 			expectedCode:     http.StatusTemporaryRedirect,
 			expectedLocation: originalURL,
 		},
 		{
-			name:  "not found",
-			token: "abcd",
+			name:     "url deleted",
+			shortURL: "abc",
 			mock: func() {
-				repo.EXPECT().Get(gomock.Any(), gomock.Any()).Return(entity.StorageItem{}, ErrNotFound)
+				repo.EXPECT().Get(gomock.Any(), gomock.Any()).Return(entity.Storage{DeletedFlag: true}, nil)
+			},
+			expectedCode: http.StatusGone,
+		},
+		{
+			name:     "not found",
+			shortURL: "abcd",
+			mock: func() {
+				repo.EXPECT().Get(gomock.Any(), gomock.Any()).Return(entity.Storage{}, ErrNotFound)
 			},
 			expectedCode: http.StatusNotFound,
 		},
 		{
-			name:  "internal server error on get",
-			token: "abcd",
+			name:     "internal server error on get",
+			shortURL: "abcd",
 			mock: func() {
-				repo.EXPECT().Get(gomock.Any(), gomock.Any()).Return(entity.StorageItem{}, ErrInternalServerError)
+				repo.EXPECT().Get(gomock.Any(), gomock.Any()).Return(entity.Storage{}, ErrInternalServerError)
 			},
 			expectedCode: http.StatusInternalServerError,
 		},
@@ -79,7 +87,7 @@ func Test_shortURLRoutes_getOriginalURL(t *testing.T) {
 				New().
 				SetRedirectPolicy(resty.NoRedirectPolicy()).
 				R().
-				Get(srv.URL + "/" + tt.token)
+				Get(srv.URL + "/" + tt.shortURL)
 
 			if !errors.Is(err, resty.ErrAutoRedirectDisabled) {
 				require.NoError(t, err, "Error making HTTP request")

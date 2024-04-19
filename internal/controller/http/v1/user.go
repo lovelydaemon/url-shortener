@@ -20,17 +20,18 @@ type userRoutes struct {
 func NewUserRoutes(handler chi.Router, l logger.Interface, u usecase.User) {
 	r := userRoutes{u, l}
 
-	handler.Get("/api/user/urls", r.getUserUrls)
+	handler.Get("/api/user/urls", r.getUserURLs)
+	handler.Delete("/api/user/urls", r.deleteURLs)
 }
 
-func (r *userRoutes) getUserUrls(w http.ResponseWriter, request *http.Request) {
+func (r *userRoutes) getUserURLs(w http.ResponseWriter, request *http.Request) {
 	if _, ok := request.Context().Value("userID").(uuid.UUID); !ok {
 		r.l.Info("Empty user id")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	resp, err := r.u.GetUrls(request.Context())
+	resp, err := r.u.GetURLs(request.Context())
 	if err != nil {
 		r.l.Error(fmt.Errorf("Error get user urls: %w", err))
 		w.WriteHeader(http.StatusInternalServerError)
@@ -57,4 +58,31 @@ func (r *userRoutes) getUserUrls(w http.ResponseWriter, request *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+}
+
+func (r *userRoutes) deleteURLs(w http.ResponseWriter, request *http.Request) {
+	ctx := request.Context()
+	if _, ok := ctx.Value("userID").(uuid.UUID); !ok {
+		r.l.Info("Empty user id")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	var req []string
+	dec := json.NewDecoder(request.Body)
+	if err := dec.Decode(&req); err != nil {
+		r.l.Info("cannot decode request JSON body")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if len(req) == 0 {
+		r.l.Info("request body is empty")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	r.u.DeleteURLs(ctx, req)
+
+	w.WriteHeader(http.StatusAccepted)
 }

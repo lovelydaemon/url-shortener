@@ -51,17 +51,17 @@ func Test_CreateValidURL(t *testing.T) {
 			name: "baseURL_with_scheme_protocol",
 			args: args{
 				baseURL: "http://example.com",
-				path:    "token",
+				path:    "shortURL",
 			},
-			want: "http://example.com/token",
+			want: "http://example.com/shortURL",
 		},
 		{
 			name: "baseURL_without_scheme_protocol",
 			args: args{
 				baseURL: "example.com",
-				path:    "token",
+				path:    "shortURL",
 			},
-			want: "http://example.com/token",
+			want: "http://example.com/shortURL",
 		},
 	}
 	for _, tt := range tests {
