@@ -22,6 +22,7 @@ require (
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
+	go.uber.org/automaxprocs v1.5.3 // indirect
 	golang.org/x/crypto v0.21.0 // indirect
 	golang.org/x/net v0.22.0 // indirect
 	golang.org/x/sync v0.5.0 // indirect

@@ -5,6 +5,7 @@ import (
 
 	"github.com/lovelydaemon/url-shortener/config"
 	"github.com/lovelydaemon/url-shortener/internal/app"
+	_ "go.uber.org/automaxprocs"
 )
 
 func main() {
