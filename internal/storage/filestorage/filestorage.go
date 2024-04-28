@@ -2,17 +2,12 @@ package filestorage
 
 import (
 	"encoding/json"
-	"errors"
 	"io"
 	"os"
 	"path/filepath"
 	"sync"
 
 	"github.com/lovelydaemon/url-shortener/internal/entity"
-)
-
-var (
-	ErrFileFormat = errors.New("Unsupported file format")
 )
 
 type storage struct {
@@ -23,12 +18,6 @@ type storage struct {
 
 // NewStorage creates new file storage
 func NewStorage(path string) (*storage, error) {
-	filename := filepath.Base(path)
-
-	if filepath.Ext(filename) != ".json" || len(filename) < 6 {
-		return nil, ErrFileFormat
-	}
-
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		return nil, err
 	}
