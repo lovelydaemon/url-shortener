@@ -1,6 +1,6 @@
 build: ### build
-	go build -v ./cmd/app
-	go build -v ./cmd/client
+	mkdir -p bin
+	go build -v -o ./bin ./cmd/app 
 .PHONY: build
 
 test: ### run test
@@ -14,10 +14,6 @@ fmt: ### run format
 vet: ### run linter
 	go vet ./...
 .PHONY: vet 
-
-mock: ### run mockgen
-	mockgen -source=./internal/usecase/interfaces.go -destination=./internal/usecase/mocks.go -package=usecase
-.PHONY: mock 
 
 migrate-create: ### create new migration
 	migrate create -ext sql -dir migrations 'migrate_name'
