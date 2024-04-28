@@ -24,6 +24,3 @@ vendor/
 
 # Mac OS
 .DS_Store
-
-tmp/*
-!tmp/.keep

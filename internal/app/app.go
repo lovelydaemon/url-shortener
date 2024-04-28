@@ -2,20 +2,18 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/lovelydaemon/url-shortener/config"
-	v1 "github.com/lovelydaemon/url-shortener/internal/controller/http/v1"
-	"github.com/lovelydaemon/url-shortener/internal/httpserver"
-	"github.com/lovelydaemon/url-shortener/internal/logger"
-	"github.com/lovelydaemon/url-shortener/internal/postgres"
+	"github.com/lovelydaemon/url-shortener/internal/controller/http"
+	"github.com/lovelydaemon/url-shortener/internal/pkg/httpserver"
+	"github.com/lovelydaemon/url-shortener/internal/pkg/logger"
+	"github.com/lovelydaemon/url-shortener/internal/queue"
 	"github.com/lovelydaemon/url-shortener/internal/storage"
-	"github.com/lovelydaemon/url-shortener/internal/usecase"
-	"github.com/lovelydaemon/url-shortener/internal/usecase/repo"
 )
 
 // Run creates objects via constructors
@@ -26,36 +24,17 @@ func Run(cfg *config.Config) {
 	// Logger
 	l := logger.New(cfg.Log.Level)
 
-	// Repository
-	pg, err := postgres.New(cfg.PG.URL)
-	if err != nil {
-		l.Fatal(fmt.Errorf("app - Run - postgres.New: %w", err))
-	}
-	defer pg.Close()
+	// Storage
+	storage := storage.New(cfg, l)
+	defer storage.Close()
 
-	st, err := storage.New(cfg.Storage.Path)
-	if err != nil {
-		l.Fatal(fmt.Errorf("Couldn't open file: %w", err))
-	}
-	defer st.Close()
-
-	var shortenRepo usecase.ShortenRepo
-	if cfg.PG.URL != "" {
-		shortenRepo = repo.NewShortenPG(pg)
-	} else {
-		shortenRepo = repo.NewShortenST(st)
-	}
-
-	// Use case
-	shorten := usecase.NewShorten(shortenRepo)
-	ping := usecase.NewPing(repo.NewPing(pg))
-	user := usecase.NewUser(repo.NewUser(pg))
-	usecases := usecase.New(shorten, ping, user)
+	// Queue
+	queue := queue.New(storage, l)
+	ctx, cancel := context.WithCancel(context.Background())
+	go queue.FlushUserURLs(ctx)
 
 	// HTTP Server
-	handler := chi.NewRouter()
-	handler = v1.NewRouter(handler, l, cfg, usecases)
-
+	handler := http.BuildHandler(l, cfg, storage, queue)
 	httpServer := httpserver.New(handler, httpserver.Addr(cfg.HTTP.Addr))
 	l.Info("Server running on " + httpServer.Addr())
 
@@ -66,13 +45,14 @@ func Run(cfg *config.Config) {
 	select {
 	case s := <-interrupt:
 		l.Info("app - Run - signal: " + s.String())
-	case err = <-httpServer.Notify():
+	case err := <-httpServer.Notify():
 		l.Error(fmt.Errorf("app - Run - httpServer.Notify: %w", err))
 	}
 
 	// Shutdown
-	err = httpServer.Shutdown()
-	if err != nil {
+	cancel()
+
+	if err := httpServer.Shutdown(); err != nil {
 		l.Error(fmt.Errorf("app - Run - httpServer.Shutdown: %w", err))
 	}
 }

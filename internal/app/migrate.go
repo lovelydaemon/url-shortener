@@ -15,6 +15,7 @@ const (
 	_defaultTimeout  = time.Second
 )
 
+// ApplyMigrations applies migrations to the database
 func ApplyMigrations(databaseURL string) {
 	if len(databaseURL) == 0 {
 		log.Print("Migrate: databaseURL is empty")
