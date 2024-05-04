@@ -1,3 +1,11 @@
+up: ## run docker compose
+	docker-compose up --build -d && docker-compose logs -f
+.PHONY: up
+
+down: ## down docker compose
+	docker-compose down --remove-orphans
+.PHONY: down
+
 build: ### build
 	mkdir -p bin
 	go build -v -o ./bin ./cmd/app 
