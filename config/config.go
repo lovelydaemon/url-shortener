@@ -52,7 +52,7 @@ func New() (*Config, error) {
 }
 
 func parseFlags(cfg *Config) {
-	flag.StringVar(&cfg.HTTP.Addr, "a", "localhost:8080", "port on which the server will run")
+	flag.StringVar(&cfg.HTTP.Addr, "a", "", "port on which the server will run")
 	flag.StringVar(&cfg.BaseURL, "b", "", "base url for short url output")
 	flag.StringVar(&cfg.Storage.Path, "f", "", "path to the file where the data will be saved")
 	flag.StringVar(&cfg.PG.URL, "d", "", "database url connection")
