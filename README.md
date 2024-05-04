@@ -87,7 +87,8 @@ http://localhost:8080/api/shorten/batch
 
 ### Получение всех ссылок пользователем <a name="get_user_urls"></a>
 
-Для доступа к ссылкам необходимо подставить Cookie выданный ранее 
+Для доступа к ссылкам необходимо подставить Cookie выданный ранее
+
 Запрос:
 ```curl
 curl -v -H "Cookie:<your_cookie>" http://localhost:8080/api/user/urls
@@ -96,7 +97,8 @@ curl -v -H "Cookie:<your_cookie>" http://localhost:8080/api/user/urls
 
 ### Удаление ссылок пользователем <a name="delete_user_urls"></a>
 
-Для доступа необходимо подстваить Cookie выданный ранее
+Для доступа необходимо подставить Cookie выданный ранее
+
 Запрос:
 ```curl
 curl -v -X DELETE \
